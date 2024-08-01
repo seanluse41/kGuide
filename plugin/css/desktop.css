@@ -245,3 +245,59 @@
 .driver-popover-arrow-none {
   display: none
 }
+
+#guide-side-menu {
+  position: fixed;
+  right: -300px;
+  top: 0;
+  width: 300px;
+  height: 100%;
+  background-color: #f0f0f0;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+  transition: right 0.3s ease-in-out;
+  z-index: 1000;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+#guide-side-menu.open {
+  right: 0;
+}
+
+.scrollable-list {
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.selected-element-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 5px;
+  background-color: #fff;
+  border-radius: 4px;
+  flex-wrap: wrap;
+}
+
+.title-input, .description-input {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  width: 100%;
+}
+
+.description-input {
+  height: 60px;
+  resize: vertical;
+}
+
+.remove-element {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}

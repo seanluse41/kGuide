@@ -24,7 +24,15 @@ interface ElementPickerOptions {
   highlightedElement?: (el: HTMLElement) => HTMLElement | null;
 }
 
+interface SelectedElement {
+  element: HTMLElement;
+  label: string;
+  title: string;
+  description: string;
+}
+
 let currentHighlightedElement: HTMLElement | null = null;
+let selectedElements: SelectedElement[] = [];
 
 const highlightElement = (el: HTMLElement | null) => {
   if (currentHighlightedElement) {
@@ -89,6 +97,8 @@ kintone.events.on("app.record.create.show", () => {
   if (header === null) {
     throw new Error("The header element is unavailable on this page");
   }
+  const sideMenu = createSideMenu();
+
   const guideButton = new Button({
     text: 'Start Guide',
     type: 'submit'
@@ -103,6 +113,8 @@ kintone.events.on("app.record.create.show", () => {
     driverObj.drive();
   });
 
+
+  // Header create button
   const createButton = new Button({
     text: 'Create Guide',
     type: 'submit'
@@ -111,7 +123,7 @@ kintone.events.on("app.record.create.show", () => {
     dialog.open()
   });
 
-  // Create OK and Cancel buttons
+  // Create OK and Cancel buttons for create dialogue
   const okButton = new Button({
     text: 'Create New Guide',
     type: 'submit'
@@ -123,24 +135,24 @@ kintone.events.on("app.record.create.show", () => {
 
   okButton.addEventListener('click', () => {
     dialog.close()
+    showSideMenu(sideMenu);
+    selectedElements = []; // Clear previously selected elements
+    updateSelectedElementsList();
+
     picker.start({
       onHover: (el: HTMLElement) => {
         const parentElement = getParentFieldElement(el);
         highlightElement(parentElement);
-        if (parentElement) {
-          console.log(`Hover: ${parentElement}`);
-        }
       },
       onClick: (el: HTMLElement) => {
         const parentElement = getParentFieldElement(el);
         if (parentElement) {
           console.log(parentElement);
-          // You can perform any other actions with the parent field element here
+          addElementToSideMenu(parentElement); // This line is now safe
         } else {
           console.log("No parent field element found");
         }
         highlightElement(null);
-        picker.stop();
       },
       elementFilter: (el: HTMLElement) => {
         return getParentFieldElement(el) !== null;
@@ -173,3 +185,102 @@ kintone.events.on("app.record.create.show", () => {
   header.appendChild(guideButton);
   header.appendChild(createButton);
 });
+
+// Side Menu Stuff
+
+const createSideMenu = () => {
+  const sideMenu = document.createElement('div');
+  sideMenu.id = 'guide-side-menu';
+  sideMenu.innerHTML = `
+    <h2>Create Guide</h2>
+    <div id="selected-elements-list" class="scrollable-list"></div>
+  `;
+  document.body.appendChild(sideMenu);
+
+  // Add close button
+  const closeButton = new Button({
+    text: 'Close',
+    type: 'normal'
+  });
+  closeButton.addEventListener('click', () => {
+    sideMenu.classList.remove('open');
+    selectedElements = []; // Clear the selected elements when closing
+    updateSelectedElementsList();
+  });
+  sideMenu.appendChild(closeButton);
+
+  // Add finish button
+  const finishButton = new Button({
+    text: 'Finish Guide Creation',
+    type: 'submit'
+  });
+  finishButton.addEventListener('click', () => {
+    const newGuideSteps = prepareNewGuideSteps();
+    console.log('New guide steps:', newGuideSteps);
+    // Here you can process the new guide steps as needed
+    sideMenu.classList.remove('open');
+  });
+  sideMenu.appendChild(finishButton);
+
+  return sideMenu;
+};
+
+const showSideMenu = (sideMenu: HTMLElement) => {
+  sideMenu.classList.add('open');
+};
+
+const addElementToSideMenu = (element: HTMLElement) => {
+  const label = getElementLabel(element);
+  selectedElements.push({ element, label, title: '', description: '' });
+  updateSelectedElementsList();
+};
+
+const getElementLabel = (element: HTMLElement): string => {
+  const labelElement = element.querySelector('.control-label-text-gaia');
+  return labelElement ? labelElement.textContent || 'No Label' : 'No Label';
+};
+
+const updateSelectedElementsList = () => {
+  const listContainer = document.getElementById('selected-elements-list');
+  if (!listContainer) return;
+
+  listContainer.innerHTML = '';
+  selectedElements.forEach((item, index) => {
+    const listItem = document.createElement('div');
+    listItem.classList.add('selected-element-item');
+    listItem.innerHTML = `
+      <div>${index + 1}. ${item.label}</div>
+      <input type="text" class="title-input" placeholder="Enter title" value="${item.title}" data-index="${index}">
+      <textarea class="description-input" placeholder="Enter description" data-index="${index}">${item.description}</textarea>
+      <button class="remove-element" data-index="${index}">Remove</button>
+    `;
+    listContainer.appendChild(listItem);
+  });
+
+  // Add event listeners to inputs and remove buttons
+  listContainer.querySelectorAll('.title-input, .description-input').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const index = parseInt((e.target as HTMLElement).getAttribute('data-index') || '0');
+      const field = (e.target as HTMLElement).classList.contains('title-input') ? 'title' : 'description';
+      selectedElements[index][field] = (e.target as HTMLInputElement).value;
+    });
+  });
+
+  const removeButtons = listContainer.getElementsByClassName('remove-element');
+  Array.from(removeButtons).forEach(button => {
+    button.addEventListener('click', (e) => {
+      const index = parseInt((e.target as HTMLElement).getAttribute('data-index') || '0');
+      selectedElements.splice(index, 1);
+      updateSelectedElementsList();
+    });
+  });
+};
+
+const prepareNewGuideSteps = (): {index: number, element: HTMLElement, title: string, description: string}[] => {
+  return selectedElements.map(({ element, title, description }, index) => ({ 
+    index,
+    element, 
+    title, 
+    description 
+  }));
+};
