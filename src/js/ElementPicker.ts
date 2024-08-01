@@ -1,0 +1,42 @@
+import { ElementPickerOptions } from './types';
+import { ElementPicker } from "pick-dom-element";
+
+export class CustomElementPicker {
+  private picker: any; // Replace 'any' with the actual type from the ElementPicker library
+  private currentHighlightedElement: HTMLElement | null = null;
+  private style = { borderColor: "#0000ff" };
+
+  constructor(options: ElementPickerOptions) {
+    this.picker = new ElementPicker(options);
+  }
+
+  highlightElement(el: HTMLElement | null) {
+    if (this.currentHighlightedElement) {
+      this.currentHighlightedElement.style.outline = '';
+    }
+    if (el) {
+      el.style.outline = `2px solid ${this.style.borderColor}`;
+      this.currentHighlightedElement = el;
+    } else {
+      this.currentHighlightedElement = null;
+    }
+  }
+
+  getParentFieldElement(el: HTMLElement): HTMLElement | null {
+    const pattern = /^field-\d{5,9}$/;
+    let currentElement: HTMLElement | null = el;
+
+    while (currentElement) {
+      if (Array.from(currentElement.classList).some(className => pattern.test(className))) {
+        return currentElement;
+      }
+      currentElement = currentElement.parentElement;
+    }
+
+    return null;
+  }
+
+  start(options: any) { // Replace 'any' with the correct type
+    this.picker.start(options);
+  }
+}
