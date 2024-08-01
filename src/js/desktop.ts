@@ -6,8 +6,6 @@ import { driver } from "driver.js";
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 import { ElementPicker } from "pick-dom-element";
 
-const style = { borderColor: "#0000ff" };
-const picker = new ElementPicker({ style });
 
 interface StepObject {
   element: string;
@@ -18,6 +16,33 @@ interface StepObject {
     align: string;
   };
 }
+
+interface ElementPickerOptions {
+  style?: {
+    borderColor: string;
+  };
+  highlightedElement?: (el: HTMLElement) => HTMLElement | null;
+}
+
+let currentHighlightedElement: HTMLElement | null = null;
+
+const highlightElement = (el: HTMLElement | null) => {
+  if (currentHighlightedElement) {
+    currentHighlightedElement.style.outline = '';
+  }
+  if (el) {
+    el.style.outline = `2px solid ${style.borderColor}`;
+    currentHighlightedElement = el;
+  } else {
+    currentHighlightedElement = null;
+  }
+};
+
+const style = { borderColor: "#0000ff" };
+const picker = new ElementPicker({
+  style,
+} as ElementPickerOptions);
+
 
 const getGuideSteps = async (): Promise<StepObject[]> => {
   const query = `id = "${kintone.app.getId()}"`;
@@ -44,21 +69,18 @@ const getGuideSteps = async (): Promise<StepObject[]> => {
 };
 
 
-const filterElementWithoutFieldClass = (el: HTMLElement): boolean => {
+const getParentFieldElement = (el: HTMLElement): HTMLElement | null => {
   const pattern = /^field-\d{5,9}$/;
-  const pattern2 = /^label-\d{5,9}$/;
-  const pattern3 = /^value-\d{5,9}$/;
+  let currentElement: HTMLElement | null = el;
 
-  for (const className of Array.from(el.classList)) { // Convert to array first
-    if (pattern.test(className)) {
-      return true; 
-    } else if (pattern2.test(className)) {
-      return true;
-    } else if (pattern3.test(className)) {
-      return true;
+  while (currentElement) {
+    if (Array.from(currentElement.classList).some(className => pattern.test(className))) {
+      return currentElement;
     }
+    currentElement = currentElement.parentElement;
   }
-  return false; 
+
+  return null;
 };
 
 kintone.events.on("app.record.create.show", () => {
@@ -72,7 +94,7 @@ kintone.events.on("app.record.create.show", () => {
     type: 'submit'
   });
   guideButton.addEventListener('click', async (clickEvent) => {
-    let stepsObject: Array<object> = await getGuideSteps() 
+    let stepsObject: Array<object> = await getGuideSteps()
     const driverObj = driver({
       showProgress: true,
       animate: true,
@@ -102,20 +124,29 @@ kintone.events.on("app.record.create.show", () => {
   okButton.addEventListener('click', () => {
     dialog.close()
     picker.start({
-      onHover: (el) => console.log(`Hover: ${el}`),
-      onClick: (el) => {
-        let currentElement = el;
-        console.log(currentElement)
+      onHover: (el: HTMLElement) => {
+        const parentElement = getParentFieldElement(el);
+        highlightElement(parentElement);
+        if (parentElement) {
+          console.log(`Hover: ${parentElement}`);
+        }
+      },
+      onClick: (el: HTMLElement) => {
+        const parentElement = getParentFieldElement(el);
+        if (parentElement) {
+          console.log(parentElement);
+          // You can perform any other actions with the parent field element here
+        } else {
+          console.log("No parent field element found");
+        }
+        highlightElement(null);
         picker.stop();
       },
-      elementFilter: (el) => {
-        if (filterElementWithoutFieldClass(el)) {
-          return true;
-        }
-        return false
+      elementFilter: (el: HTMLElement) => {
+        return getParentFieldElement(el) !== null;
       }
     });
-  });
+  })
   cancelButton.addEventListener('click', () => {
     dialog.close()
   });
