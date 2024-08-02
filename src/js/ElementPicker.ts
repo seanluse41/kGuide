@@ -36,6 +36,10 @@ export class CustomElementPicker {
     return null;
   }
 
+  close() {
+    this.picker.stop()
+  }
+
   start(options: any) { // Replace 'any' with the correct type
     this.picker.start(options);
   }

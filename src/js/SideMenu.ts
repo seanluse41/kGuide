@@ -2,6 +2,7 @@ import { SelectedElement } from './types';
 import { Spinner, Button, Dropdown, Notification } from 'kintone-ui-component';
 import { saveGuideSteps } from './GuideSteps';
 import { DriveStep } from "driver.js";
+import { CustomElementPicker } from './ElementPicker';
 
 let spinner = new Spinner({
   text: 'ガイド更新中…',
@@ -28,9 +29,11 @@ export class SideMenu {
   private sideMenu: HTMLElement;
   private selectedElements: SelectedElement[] = [];
   private finishButton!: Button;
+  private elementPicker: CustomElementPicker;
 
-  constructor() {
+  constructor(elementPicker: CustomElementPicker) {
     this.sideMenu = this.createSideMenu();
+    this.elementPicker = elementPicker;
   }
 
   private createSideMenu(): HTMLElement {
@@ -69,6 +72,7 @@ export class SideMenu {
     this.selectedElements = [];
     this.updateSelectedElementsList();
     this.updateFinishButtonState();
+    this.elementPicker.close();
   }
 
   public addElement(element: HTMLElement) {
@@ -186,6 +190,7 @@ export class SideMenu {
       errorNotification.open()
     } finally {
       spinner.close();
+      this.elementPicker.close();
       this.close();
     }
   }

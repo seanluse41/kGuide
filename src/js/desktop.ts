@@ -9,7 +9,6 @@ const PLUGIN_ID = kintone.$PLUGIN_ID;
 
 kintone.events.on("app.record.create.show", () => {
   const config = kintone.plugin.app.getConfig(PLUGIN_ID);
-  console.log(config)
   const header = kintone.app.record.getHeaderMenuSpaceElement();
   // @ts-ignore
   let permissions = kintone.app.getPermissions()
@@ -19,8 +18,8 @@ kintone.events.on("app.record.create.show", () => {
 
   header.classList.add('guide-header');
 
-  const sideMenu = new SideMenu();
   const elementPicker = new CustomElementPicker({ style: { borderColor: "#0000ff" } });
+  const sideMenu = new SideMenu(elementPicker);
 
   const guideButton = new Button({
     text: 'Start Guide',
