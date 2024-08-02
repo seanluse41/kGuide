@@ -10,16 +10,20 @@ const PLUGIN_ID = kintone.$PLUGIN_ID;
 kintone.events.on("app.record.create.show", () => {
   const config = kintone.plugin.app.getConfig(PLUGIN_ID);
   const header = kintone.app.record.getHeaderMenuSpaceElement();
+  // @ts-ignore
+  let permissions = kintone.app.getPermissions()
   if (header === null) {
     throw new Error("The header element is unavailable on this page");
   }
+
+  header.classList.add('guide-header');
 
   const sideMenu = new SideMenu();
   const elementPicker = new CustomElementPicker({ style: { borderColor: "#0000ff" } });
 
   const guideButton = new Button({
     text: 'Start Guide',
-    type: 'submit'
+    type: 'submit',
   });
   guideButton.addEventListener('click', async () => {
     let steps: DriveStep[] | null = await getGuideSteps();
@@ -37,7 +41,8 @@ kintone.events.on("app.record.create.show", () => {
 
   const createButton = new Button({
     text: 'Create Guide',
-    type: 'submit'
+    type: 'submit',
+    className: 'guide-button2'
   });
   createButton.addEventListener('click', () => {
     showCreateGuideDialog();
@@ -138,5 +143,7 @@ kintone.events.on("app.record.create.show", () => {
   }
 
   header.appendChild(guideButton);
-  header.appendChild(createButton);
+  if (permissions.editApp == true) {
+    header.appendChild(createButton);
+  }
 });

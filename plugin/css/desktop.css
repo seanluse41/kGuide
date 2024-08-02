@@ -300,3 +300,12 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
+.guide-header {
+  display: flex;
+  padding: 16px 16px 0px 16px;
+}
+
+.guide-button2 {
+  margin-left: 16px;
+}
