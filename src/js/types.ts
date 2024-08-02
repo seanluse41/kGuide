@@ -10,4 +10,11 @@ export interface SelectedElement {
   label: string;
   title: string;
   description: string;
+  position: string;
+}
+
+export interface DropdownChangeEvent extends Event {
+  detail: {
+    value: string;
+  };
 }

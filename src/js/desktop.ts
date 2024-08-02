@@ -1,6 +1,5 @@
 import { Button } from 'kintone-ui-component/lib/button';
 import { Dialog } from 'kintone-ui-component';
-import { Spinner } from 'kintone-ui-component';
 import { driver, DriveStep } from "driver.js";
 import { CustomElementPicker } from './ElementPicker';
 import { SideMenu } from './SideMenu';
@@ -18,23 +17,22 @@ kintone.events.on("app.record.create.show", () => {
   const sideMenu = new SideMenu();
   const elementPicker = new CustomElementPicker({ style: { borderColor: "#0000ff" } });
 
-  const spinner = new Spinner({
-    text: 'ガイド更新中…',
-    container: document.body
-  });
-
   const guideButton = new Button({
     text: 'Start Guide',
     type: 'submit'
   });
   guideButton.addEventListener('click', async () => {
-    let steps: DriveStep[] = await getGuideSteps();
-    const driverObj = driver({
-      showProgress: true,
-      animate: true,
-      steps: steps
-    });
-    driverObj.drive();
+    let steps: DriveStep[] | null = await getGuideSteps();
+    if (steps === null) {
+      showNoGuideDialog();
+    } else {
+      const driverObj = driver({
+        showProgress: true,
+        animate: true,
+        steps: steps
+      });
+      driverObj.drive();
+    }
   });
 
   const createButton = new Button({
@@ -42,20 +40,82 @@ kintone.events.on("app.record.create.show", () => {
     type: 'submit'
   });
   createButton.addEventListener('click', () => {
-    dialog.open();
+    showCreateGuideDialog();
   });
 
-  const okButton = new Button({
-    text: 'Create New Guide',
-    type: 'submit'
-  });
-  const cancelButton = new Button({
-    text: 'Cancel',
-    type: 'normal'
-  });
+  function showNoGuideDialog() {
+    const okButton = new Button({
+      text: 'Create New Guide',
+      type: 'submit'
+    });
+    const cancelButton = new Button({
+      text: 'Cancel',
+      type: 'normal'
+    });
 
-  okButton.addEventListener('click', () => {
-    dialog.close();
+    okButton.addEventListener('click', () => {
+      noGuideDialog.close();
+      startGuideCreation();
+    });
+
+    cancelButton.addEventListener('click', () => {
+      noGuideDialog.close();
+    });
+
+    const footerDiv = document.createElement('div');
+    footerDiv.appendChild(okButton);
+    footerDiv.appendChild(cancelButton);
+
+    const noGuideDialog = new Dialog({
+      title: 'No Guide Exists',
+      content: '<div>There is no guide created for this app yet. Would you like to create one?</div>',
+      footer: footerDiv,
+      header: '<div>No Guide Found</div>',
+      icon: 'info',
+      container: document.body,
+      footerVisible: true
+    });
+
+    noGuideDialog.open();
+  }
+
+  function showCreateGuideDialog() {
+    const okButton = new Button({
+      text: 'Create New Guide',
+      type: 'submit'
+    });
+    const cancelButton = new Button({
+      text: 'Cancel',
+      type: 'normal'
+    });
+
+    okButton.addEventListener('click', () => {
+      createGuideDialog.close();
+      startGuideCreation();
+    });
+
+    cancelButton.addEventListener('click', () => {
+      createGuideDialog.close();
+    });
+
+    const footerDiv = document.createElement('div');
+    footerDiv.appendChild(okButton);
+    footerDiv.appendChild(cancelButton);
+
+    const createGuideDialog = new Dialog({
+      title: 'Create New Tour?',
+      content: '<div>Any Existing Tours will be Overwritten.</div>',
+      footer: footerDiv,
+      header: '<div>Create New Tour?</div>',
+      icon: 'warning',
+      container: document.body,
+      footerVisible: true
+    });
+
+    createGuideDialog.open();
+  }
+
+  function startGuideCreation() {
     sideMenu.show();
     elementPicker.start({
       onHover: (el: HTMLElement) => {
@@ -65,7 +125,6 @@ kintone.events.on("app.record.create.show", () => {
       onClick: (el: HTMLElement) => {
         const parentElement = elementPicker.getParentFieldElement(el);
         if (parentElement) {
-          console.log("Adding element to side menu:", parentElement);
           sideMenu.addElement(parentElement);
         } else {
           console.log("No parent field element found");
@@ -76,25 +135,7 @@ kintone.events.on("app.record.create.show", () => {
         return elementPicker.getParentFieldElement(el) !== null;
       }
     });
-  });
-
-  cancelButton.addEventListener('click', () => {
-    dialog.close();
-  });
-
-  const divEl = document.createElement('div');
-  divEl.appendChild(okButton);
-  divEl.appendChild(cancelButton);
-
-  const dialog = new Dialog({
-    title: 'Create New Tour?',
-    content: '<div>Any Existing Tours will be Overwritten.</div>',
-    footer: divEl,
-    header: '<div>Create New Tour?</div>',
-    icon: 'warning',
-    container: document.body,
-    footerVisible: true
-  });
+  }
 
   header.appendChild(guideButton);
   header.appendChild(createButton);
