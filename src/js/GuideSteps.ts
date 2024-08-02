@@ -2,9 +2,13 @@
 
 import { DriveStep } from 'driver.js';
 
+const PLUGIN_ID = kintone.$PLUGIN_ID;
+const config = kintone.plugin.app.getConfig(PLUGIN_ID);
+const repositoryAppID = config.message
+
 export async function getGuideSteps(): Promise<DriveStep[] | null> {
   const query = `id = "${kintone.app.getId()}"`;
-  const url = kintone.api.url('/k/v1/records.json', true) + '?app=128&query=' + encodeURIComponent(query);
+  const url = kintone.api.url('/k/v1/records.json', true) + `?app=${repositoryAppID}&query=` + encodeURIComponent(query);
 
   try {
     const response = await kintone.api(url, 'GET', {});
@@ -30,7 +34,7 @@ export async function getGuideSteps(): Promise<DriveStep[] | null> {
 
 export async function saveGuideSteps(steps: DriveStep[], appId: string): Promise<void> {
   const query = `id = "${appId}"`;
-  const getUrl = kintone.api.url('/k/v1/records.json', true) + '?app=128&query=' + encodeURIComponent(query);
+  const getUrl = kintone.api.url('/k/v1/records.json', true) + `?app=${repositoryAppID}&query=` + encodeURIComponent(query);
 
   try {
     // Check if a record already exists
@@ -50,7 +54,7 @@ export async function saveGuideSteps(steps: DriveStep[], appId: string): Promise
       const recordId = getResponse.records[0].$id.value;
       const putUrl = kintone.api.url('/k/v1/record.json', true);
       const putBody = {
-        app: '128',
+        app: repositoryAppID,
         id: recordId,
         record: {
           stepsTable: { value: stepsTableValue }
@@ -61,7 +65,7 @@ export async function saveGuideSteps(steps: DriveStep[], appId: string): Promise
       // Create new record
       const postUrl = kintone.api.url('/k/v1/record.json', true);
       const postBody = {
-        app: '128',
+        app: repositoryAppID,
         record: {
           id: { value: appId },
           stepsTable: { value: stepsTableValue }

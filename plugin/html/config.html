@@ -1,12 +1,16 @@
 <section class="settings">
   <h2 class="settings-heading">Settings for kGuide</h2>
-  <p class="kintoneplugin-desc">This message is displayed on the app page after the app has been updated.</p>
+  <p class="kintoneplugin-desc">Please Input the AppID of the guide repository app.</p>
+  <p class="kintoneplugin-desc">If the repository does not exist, click the create repository app button.</p>
   <form class="js-submit-settings">
     <p class="kintoneplugin-row">
       <label for="message">
-        Message:
-        <input type="text" class="js-text-message kintoneplugin-input-text">
+        Repository App ID:
+        <input type="text" placeholder="1" id="repository-appid" class="js-text-message kintoneplugin-input-text">
       </label>
+    </p>
+    <p class="kintoneplugin-row">
+      <button type="button" id="create-repository-button" class="kintoneplugin-button-dialog-ok">Create Repository App</button>
     </p>
     <p class="kintoneplugin-row">
         <button type="button" class="js-cancel-button kintoneplugin-button-dialog-cancel">Cancel</button>

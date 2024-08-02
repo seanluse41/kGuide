@@ -9,6 +9,7 @@ const PLUGIN_ID = kintone.$PLUGIN_ID;
 
 kintone.events.on("app.record.create.show", () => {
   const config = kintone.plugin.app.getConfig(PLUGIN_ID);
+  console.log(config)
   const header = kintone.app.record.getHeaderMenuSpaceElement();
   // @ts-ignore
   let permissions = kintone.app.getPermissions()
