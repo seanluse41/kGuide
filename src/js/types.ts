@@ -18,3 +18,19 @@ export interface DropdownChangeEvent extends Event {
     value: string;
   };
 }
+
+export interface FieldLayout {
+  type: string;
+  code: string;
+  layout?: FieldLayout[];
+}
+
+export interface SectionLayout {
+  type: string;
+  code?: string;
+  fields?: FieldLayout[];
+}
+
+export interface AppLayout {
+  layout: SectionLayout[];
+}

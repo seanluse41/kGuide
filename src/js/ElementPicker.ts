@@ -23,12 +23,15 @@ export class CustomElementPicker {
   }
 
   getParentFieldElement(el: HTMLElement): HTMLElement | null {
-    const pattern = /^field-\d{5,9}$/;
+    const pattern2 = /^6_-\d{1,9}$/;
+    const pattern = /^field-\d{1,9}$/;
     let currentElement: HTMLElement | null = el;
 
     while (currentElement) {
       if (Array.from(currentElement.classList).some(className => pattern.test(className))) {
         return currentElement;
+      } else if (Array.from(currentElement.classList).some(className => pattern2.test(className))) {
+        return currentElement
       }
       currentElement = currentElement.parentElement;
     }

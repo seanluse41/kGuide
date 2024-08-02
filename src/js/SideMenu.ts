@@ -93,10 +93,13 @@ export class SideMenu {
   }
 
   private getFieldClass(element: HTMLElement): string | null {
-    const pattern = /^field-\d{5,9}$/;
+    const pattern = /^field-\d{1,9}$/;
+    const pattern2 = /^6_-\d{1,9}$/;
     let result: string | null = null;
     element.classList.forEach((className) => {
       if (pattern.test(className)) {
+        result = className;
+      } else if (pattern2.test(className)) {
         result = className;
       }
     });

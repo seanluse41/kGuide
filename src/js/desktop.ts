@@ -4,6 +4,7 @@ import { driver, DriveStep } from "driver.js";
 import { CustomElementPicker } from './ElementPicker';
 import { SideMenu } from './SideMenu';
 import { getGuideSteps } from './GuideSteps';
+import { FieldLayout, SectionLayout, AppLayout } from './types';
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 
@@ -120,7 +121,34 @@ kintone.events.on("app.record.create.show", () => {
     createGuideDialog.open();
   }
 
-  function startGuideCreation() {
+  async function openAllFieldGroups() {
+    try {
+      const layout : AppLayout = await kintone.api(kintone.api.url('/k/v1/app/form/layout', true), 'GET', { app: kintone.app.getId() });
+      const openGroups = (fields: FieldLayout[]) => {
+        fields.forEach(field => {
+          if (field.type === 'GROUP') {
+            kintone.app.record.setGroupFieldOpen(field.code, true);
+            if (field.layout) {
+              openGroups(field.layout);
+            }
+          }
+        });
+      };
+      layout.layout.forEach((section: SectionLayout) => {
+        if (section.type === 'GROUP' && section.code) {
+          kintone.app.record.setGroupFieldOpen(section.code, true);
+        }
+        if (section.fields) {
+          openGroups(section.fields);
+        }
+      });
+    } catch (error) {
+      console.error('Error opening field groups:', error);
+    }
+  }
+
+  async function startGuideCreation() {
+    await openAllFieldGroups();
     sideMenu.show();
     elementPicker.start({
       onHover: (el: HTMLElement) => {
