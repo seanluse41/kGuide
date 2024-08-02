@@ -47,7 +47,8 @@ export class SideMenu {
 
     const closeButton = new Button({
       text: 'Close',
-      type: 'normal'
+      type: 'normal',
+      className: 'sideMenuCloseButton'
     });
     closeButton.addEventListener('click', () => this.close());
     sideMenu.appendChild(closeButton);
@@ -93,13 +94,19 @@ export class SideMenu {
   }
 
   private getFieldClass(element: HTMLElement): string | null {
-    const pattern = /^field-\d{1,9}$/;
+    // Some fields have 6_ prefix maybe?
     const pattern2 = /^6_-\d{1,9}$/;
+    // Most fields are this
+    const pattern = /^field-\d{1,9}$/;
+    // Tables
+    const pattern3 = /^subtable-\d{1,9}$/;
     let result: string | null = null;
     element.classList.forEach((className) => {
       if (pattern.test(className)) {
         result = className;
       } else if (pattern2.test(className)) {
+        result = className;
+      } else if (pattern3.test(className)) {
         result = className;
       }
     });
