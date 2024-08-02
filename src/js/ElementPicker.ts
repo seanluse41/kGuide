@@ -37,10 +37,12 @@ export class CustomElementPicker {
   }
 
   close() {
-    this.picker.stop()
+    this.picker.stop();
+    // Remove highlight from the currently highlighted element
+    this.highlightElement(null);
   }
 
-  start(options: any) { // Replace 'any' with the correct type
+  start(options: any) {
     this.picker.start(options);
   }
 }
