@@ -1,10 +1,26 @@
 import { SelectedElement } from './types';
-import { Spinner, Button, Dropdown } from 'kintone-ui-component';
+import { Spinner, Button, Dropdown, Notification } from 'kintone-ui-component';
 import { saveGuideSteps } from './GuideSteps';
 import { DriveStep } from "driver.js";
 
 let spinner = new Spinner({
   text: 'ガイド更新中…',
+  container: document.body
+});
+
+const errorNotification = new Notification({
+  text: 'Error!',
+  type: 'danger',
+  className: 'options-class',
+  duration: 2000,
+  container: document.body
+});
+
+const successNotification = new Notification({
+  text: 'Success!',
+  type: 'success',
+  className: 'options-class',
+  duration: 2000,
   container: document.body
 });
 
@@ -164,10 +180,10 @@ export class SideMenu {
       
       await saveGuideSteps(newGuideSteps, currentAppId.toString());
       console.log('Guide steps saved successfully');
-      // You might want to show a success message to the user here
+      successNotification.open()
     } catch (error) {
       console.error('Error in finishGuideCreation:', error);
-      // You might want to show an error message to the user here
+      errorNotification.open()
     } finally {
       spinner.close();
       this.close();
