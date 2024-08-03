@@ -179,10 +179,8 @@ export class SideMenu {
       const currentAppId = kintone.app.getId();
       if (currentAppId === null) {
         throw new Error('Unable to get current app ID');
-      }
-      
+      }    
       await saveGuideSteps(newGuideSteps, currentAppId.toString());
-      console.log('Guide steps saved successfully');
       showSuccessNotification('Guide created successfully!');
     } catch (error) {
       console.error('Error in finishGuideCreation:', error);
