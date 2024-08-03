@@ -1,5 +1,5 @@
-import { Button } from 'kintone-ui-component/lib/button';
-import { Dialog } from 'kintone-ui-component';
+import { showNoGuideDialog, showCreateGuideDialog } from './components/dialogUtils';
+import { Button } from 'kintone-ui-component';
 import { driver, DriveStep } from "driver.js";
 import { CustomElementPicker } from './ElementPicker';
 import { SideMenu } from './SideMenu';
@@ -29,7 +29,10 @@ kintone.events.on("app.record.create.show", () => {
   guideButton.addEventListener('click', async () => {
     let steps: DriveStep[] | null = await getGuideSteps();
     if (steps === null) {
-      showNoGuideDialog();
+      const shouldCreateGuide = await showNoGuideDialog();
+      if (shouldCreateGuide) {
+        startGuideCreation();
+      }
     } else {
       const driverObj = driver({
         showProgress: true,
@@ -46,81 +49,12 @@ kintone.events.on("app.record.create.show", () => {
     type: 'submit',
     className: 'guide-button2'
   });
-  createButton.addEventListener('click', () => {
-    showCreateGuideDialog();
+  createButton.addEventListener('click', async () => {
+    const shouldCreateGuide = await showCreateGuideDialog();
+    if (shouldCreateGuide) {
+      startGuideCreation();
+    }
   });
-
-  function showNoGuideDialog() {
-    const okButton = new Button({
-      text: 'Create New Guide',
-      type: 'submit'
-    });
-    const cancelButton = new Button({
-      text: 'Cancel',
-      type: 'normal'
-    });
-
-    okButton.addEventListener('click', () => {
-      noGuideDialog.close();
-      startGuideCreation();
-    });
-
-    cancelButton.addEventListener('click', () => {
-      noGuideDialog.close();
-    });
-
-    const footerDiv = document.createElement('div');
-    footerDiv.appendChild(okButton);
-    footerDiv.appendChild(cancelButton);
-
-    const noGuideDialog = new Dialog({
-      title: 'No Guide Exists',
-      content: '<div>There is no guide created for this app yet. Would you like to create one?</div>',
-      footer: footerDiv,
-      header: '<div>No Guide Found</div>',
-      icon: 'info',
-      container: document.body,
-      footerVisible: true
-    });
-
-    noGuideDialog.open();
-  }
-
-  function showCreateGuideDialog() {
-    const okButton = new Button({
-      text: 'Create New Guide',
-      type: 'submit'
-    });
-    const cancelButton = new Button({
-      text: 'Cancel',
-      type: 'normal'
-    });
-
-    okButton.addEventListener('click', () => {
-      createGuideDialog.close();
-      startGuideCreation();
-    });
-
-    cancelButton.addEventListener('click', () => {
-      createGuideDialog.close();
-    });
-
-    const footerDiv = document.createElement('div');
-    footerDiv.appendChild(okButton);
-    footerDiv.appendChild(cancelButton);
-
-    const createGuideDialog = new Dialog({
-      title: 'Create New Tour?',
-      content: '<div>Any Existing Tours will be Overwritten.</div>',
-      footer: footerDiv,
-      header: '<div>Create New Tour?</div>',
-      icon: 'warning',
-      container: document.body,
-      footerVisible: true
-    });
-
-    createGuideDialog.open();
-  }
 
   async function openAllFieldGroups() {
     try {
