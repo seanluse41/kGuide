@@ -1,6 +1,6 @@
 // src/components/notificationUtils.ts
 
-import { Notification } from 'kintone-ui-component';
+import { Notification, Spinner } from 'kintone-ui-component';
 
 export const showErrorNotification = (message: string = 'Error!') => {
   const errorNotification = new Notification({
@@ -25,11 +25,8 @@ export const showSuccessNotification = (message: string = 'Success!') => {
 };
 
 export const showSpinner = (text: string = 'Loading...') => {
-  const spinner = new Notification({
+  const spinner = new Spinner({
     text: text,
-    type: 'info',
-    className: 'options-class',
-    duration: 0,  // 0 means it won't auto-close
     container: document.body
   });
   spinner.open();

@@ -1,6 +1,8 @@
+// desktop.ts
+
 import { showNoGuideDialog, showCreateGuideDialog } from './components/dialogUtils';
+import { createGuideButton, createCreateButton } from './components/buttonUtils';
 import { showErrorNotification } from './components/notificationUtils';
-import { Button } from 'kintone-ui-component';
 import { driver, DriveStep } from "driver.js";
 import { CustomElementPicker } from './ElementPicker';
 import { SideMenu } from './SideMenu';
@@ -23,10 +25,7 @@ kintone.events.on("app.record.create.show", () => {
   const elementPicker = new CustomElementPicker({ style: { borderColor: "#0000ff" } });
   const sideMenu = new SideMenu(elementPicker);
 
-  const guideButton = new Button({
-    text: 'Start Guide',
-    type: 'submit',
-  });
+  const guideButton = createGuideButton();
   guideButton.addEventListener('click', async () => {
     let steps: DriveStep[] | null = await getGuideSteps();
     if (steps === null) {
@@ -47,11 +46,7 @@ kintone.events.on("app.record.create.show", () => {
     }
   });
 
-  const createButton = new Button({
-    text: 'Create Guide',
-    type: 'submit',
-    className: 'guide-button2'
-  });
+  const createButton = createCreateButton();
   createButton.addEventListener('click', async () => {
     const shouldCreateGuide = await showCreateGuideDialog();
     if (shouldCreateGuide) {

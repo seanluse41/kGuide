@@ -1,4 +1,7 @@
-import { Button, Dropdown } from 'kintone-ui-component';
+// SideMenu.ts
+
+import { Dropdown, Button } from 'kintone-ui-component';
+import { ButtonOptions } from './components/buttonUtils';
 import { showErrorNotification, showSuccessNotification, showSpinner } from './components/notificationUtils';
 import { saveGuideSteps } from './GuideSteps';
 import { DriveStep } from "driver.js";
@@ -8,12 +11,13 @@ import { SelectedElement } from './types';
 export class SideMenu {
   private sideMenu: HTMLElement;
   private selectedElements: SelectedElement[] = [];
-  private finishButton!: Button;
+  private finishButton: Button;
   private elementPicker: CustomElementPicker;
 
   constructor(elementPicker: CustomElementPicker) {
-    this.sideMenu = this.createSideMenu();
     this.elementPicker = elementPicker;
+    this.sideMenu = this.createSideMenu();
+    this.finishButton = this.createFinishButton();
   }
 
   private createSideMenu(): HTMLElement {
@@ -22,26 +26,32 @@ export class SideMenu {
     sideMenu.innerHTML = `
       <h2>Create Guide</h2>
       <div id="selected-elements-list" class="scrollable-list"></div>
+      <div id="close-button-container"></div>
+      <div id="finish-button-container"></div>
     `;
     document.body.appendChild(sideMenu);
 
-    const closeButton = new Button({
+    const closeButtonOptions: ButtonOptions = {
       text: 'Close',
       type: 'normal',
       className: 'sideMenuCloseButton'
-    });
+    };
+    const closeButton = new Button(closeButtonOptions);
     closeButton.addEventListener('click', () => this.close());
-    sideMenu.appendChild(closeButton);
-
-    this.finishButton = new Button({
-      text: 'Finish Guide Creation',
-      type: 'submit',
-      disabled: true
-    });
-    this.finishButton.addEventListener('click', () => this.finishGuideCreation());
-    sideMenu.appendChild(this.finishButton);
+    document.getElementById('close-button-container')!.appendChild(closeButton);
 
     return sideMenu;
+  }
+
+  private createFinishButton(): Button {
+    const button = new Button({
+      text: 'Finish Guide Creation',
+      type: 'submit'
+    });
+    button.addEventListener('click', () => this.finishGuideCreation());
+    button.disabled = true;
+    document.getElementById('finish-button-container')!.appendChild(button);
+    return button;
   }
 
   show() {
@@ -56,6 +66,11 @@ export class SideMenu {
     this.elementPicker.close();
   }
 
+  private updateFinishButtonState() {
+    if (this.finishButton) {
+      this.finishButton.disabled = this.selectedElements.length === 0;
+    }
+  }
   public addElement(element: HTMLElement) {
     const label = this.getElementLabel(element);
     const fieldClass = this.getFieldClass(element);
@@ -155,12 +170,6 @@ export class SideMenu {
     });
 
     this.updateFinishButtonState();
-  }
-
-  private updateFinishButtonState() {
-    if (this.finishButton) {
-      this.finishButton.disabled = this.selectedElements.length === 0;
-    }
   }
 
   private async finishGuideCreation() {
