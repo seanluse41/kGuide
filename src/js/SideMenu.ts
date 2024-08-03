@@ -1,29 +1,9 @@
-import { SelectedElement } from './types';
-import { Spinner, Button, Dropdown, Notification } from 'kintone-ui-component';
+import { Button, Dropdown } from 'kintone-ui-component';
+import { showErrorNotification, showSuccessNotification, showSpinner } from './components/notificationUtils';
 import { saveGuideSteps } from './GuideSteps';
 import { DriveStep } from "driver.js";
 import { CustomElementPicker } from './ElementPicker';
-
-let spinner = new Spinner({
-  text: 'ガイド更新中…',
-  container: document.body
-});
-
-const errorNotification = new Notification({
-  text: 'Error!',
-  type: 'danger',
-  className: 'options-class',
-  duration: 2000,
-  container: document.body
-});
-
-const successNotification = new Notification({
-  text: 'Success!',
-  type: 'success',
-  className: 'options-class',
-  duration: 2000,
-  container: document.body
-});
+import { SelectedElement } from './types';
 
 export class SideMenu {
   private sideMenu: HTMLElement;
@@ -184,8 +164,8 @@ export class SideMenu {
   }
 
   private async finishGuideCreation() {
+    const spinner = showSpinner('ガイド更新中…');
     try {
-      spinner.open();
       const newGuideSteps = this.prepareNewGuideSteps();    
       const currentAppId = kintone.app.getId();
       if (currentAppId === null) {
@@ -194,10 +174,10 @@ export class SideMenu {
       
       await saveGuideSteps(newGuideSteps, currentAppId.toString());
       console.log('Guide steps saved successfully');
-      successNotification.open()
+      showSuccessNotification('Guide created successfully!');
     } catch (error) {
       console.error('Error in finishGuideCreation:', error);
-      errorNotification.open()
+      showErrorNotification('Failed to create guide. Please try again.');
     } finally {
       spinner.close();
       this.elementPicker.close();

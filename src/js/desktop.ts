@@ -1,4 +1,5 @@
 import { showNoGuideDialog, showCreateGuideDialog } from './components/dialogUtils';
+import { showErrorNotification } from './components/notificationUtils';
 import { Button } from 'kintone-ui-component';
 import { driver, DriveStep } from "driver.js";
 import { CustomElementPicker } from './ElementPicker';
@@ -33,6 +34,8 @@ kintone.events.on("app.record.create.show", () => {
       if (shouldCreateGuide) {
         startGuideCreation();
       }
+    } else if (steps.length == 0) {
+      showErrorNotification()
     } else {
       const driverObj = driver({
         showProgress: true,
@@ -58,7 +61,7 @@ kintone.events.on("app.record.create.show", () => {
 
   async function openAllFieldGroups() {
     try {
-      const layout : AppLayout = await kintone.api(kintone.api.url('/k/v1/app/form/layout', true), 'GET', { app: kintone.app.getId() });
+      const layout: AppLayout = await kintone.api(kintone.api.url('/k/v1/app/form/layout', true), 'GET', { app: kintone.app.getId() });
       const openGroups = (fields: FieldLayout[]) => {
         fields.forEach(field => {
           if (field.type === 'GROUP') {
