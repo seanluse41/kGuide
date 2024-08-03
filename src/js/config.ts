@@ -70,7 +70,8 @@ const createRepositoryApp = async () => {
               code: 'number',
               label: 'Step Number',
               noLabel: false,
-              required: true
+              required: true,
+              unique: true
             },
             field: {
               type: 'SINGLE_LINE_TEXT',
@@ -99,6 +100,7 @@ const createRepositoryApp = async () => {
               label: 'Position',
               noLabel: false,
               required: false,
+              defaultValue: "right",
               options: {
                 right: { label: 'right', index: 0 },
                 left: { label: 'left', index: 1 },
