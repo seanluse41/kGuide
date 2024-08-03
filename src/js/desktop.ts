@@ -36,6 +36,7 @@ kintone.events.on("app.record.create.show", () => {
         animate: true,
         steps: steps
       });
+      openAllFieldGroups()
       driverObj.drive();
     }
   });

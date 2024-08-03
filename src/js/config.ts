@@ -5,6 +5,8 @@ const PLUGIN_ID = kintone.$PLUGIN_ID;
 
 const form = document.querySelector(".js-submit-settings");
 const cancelButton = document.querySelector(".js-cancel-button");
+const createRepositoryButton = document.getElementById("#create-repository-button");
+
 const messageInput =
   document.querySelector<HTMLInputElement>(".js-text-message");
 if (!(form && cancelButton && messageInput)) {
@@ -26,3 +28,13 @@ form.addEventListener("submit", (e) => {
 cancelButton.addEventListener("click", () => {
   window.location.href = "../../" + kintone.app.getId() + "/plugin/";
 });
+
+createRepositoryButton?.addEventListener("click", async () => {
+  console.log("creating repository app...")
+  let appCreateResponse = await createRepositoryApp()
+  console.log(appCreateResponse)
+})
+
+const createRepositoryApp = () => {
+  // Create Kintone App Flow Starts here.
+}
