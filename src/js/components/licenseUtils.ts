@@ -1,74 +1,43 @@
 // licenseUtils.ts
 
-import { KintoneRestAPIClient } from "@kintone/rest-api-client";
+const PLUGIN_ID = kintone.$PLUGIN_ID;
 
-interface KintoneField {
-  type: string;
-  value: any;
-}
+export function validateLicenseKey(customerSecretKey: string): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    const baseUrl = 'https://sean.kintone.com/k/v1/records.json';
+    const query = encodeURIComponent(`secretKey = "${customerSecretKey}"`);
+    const url = `${baseUrl}?app=140&query=${query}`;
+    const method = 'GET';
+    const headers = {
+      'X-Cybozu-API-Token': 'kAf4eNyvCM1FSgUqmtsaOHDJ9297DyCcPcf2jmQA'
+    };
 
-interface KintoneRecord {
-  $id: KintoneField;
-  $revision: KintoneField;
-  [key: string]: KintoneField;
-}
+    kintone.plugin.app.proxy(PLUGIN_ID, url, method, headers, {}, (resp) => {
+      // Success callback
+      try {
+        const response = JSON.parse(resp);
+        if (response.records.length === 0) {
+          resolve(false);
+          return;
+        }
 
-interface LicenseRecord {
-  secretKey: KintoneField & { value: string };
-  validToDate: KintoneField & { value: string };
-}
+        const record = response.records[0];
+        const validToDateString = record.validToDate.value;
+        const validToDate = new Date(validToDateString);
+        validToDate.setUTCHours(23, 59, 59, 999);
 
-function isLicenseRecord(record: KintoneRecord): record is LicenseRecord & KintoneRecord {
-  return (
-    'secretKey' in record &&
-    'validToDate' in record &&
-    typeof record.secretKey.value === 'string' &&
-    typeof record.validToDate.value === 'string'
-  );
-}
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
 
-export async function validateLicenseKey(customerSecretKey: string): Promise<boolean> {
-  const client = new KintoneRestAPIClient({
-    baseUrl: "https://sean.kintone.com",
-    auth: { apiToken: 'kAf4eNyvCM1FSgUqmtsaOHDJ9297DyCcPcf2jmQA' } // Replace with your actual API token
-  });
-
-  try {
-    const query = `secretKey = "${customerSecretKey}"`;
-    const { records } = await client.record.getRecords({
-      app: "140",
-      query: query,
-      totalCount: true
+        resolve(validToDate >= today);
+      } catch (error) {
+        console.error('Error parsing response:', error);
+        reject(error);
+      }
+    }, (error) => {
+      // Failure callback
+      console.error('Error validating license:', error);
+      reject(error);
     });
-
-    if (records.length === 0) {
-      // No matching record found
-      return false;
-    }
-
-    const record = records[0] as KintoneRecord;
-
-    if (!isLicenseRecord(record)) {
-      console.error('Invalid record structure:', record);
-      return false;
-    }
-
-    // Extract the validToDate
-    const validToDateString = record.validToDate.value;
-
-    // Convert validToDate string to Date object
-    const validToDate = new Date(validToDateString);
-    validToDate.setUTCHours(23, 59, 59, 999); // Set to end of day in UTC
-
-    // Get today's date in UTC
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0); // Set to start of day in UTC
-
-    // Compare dates
-    return validToDate >= today;
-
-  } catch (error) {
-    console.error('Error validating license:', error);
-    throw error;
-  }
+  });
 }

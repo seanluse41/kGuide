@@ -30,54 +30,72 @@ kintone.events.on("app.record.create.show", async () => {
 
   const guideButton = createGuideButton(i18n.t('startGuide'));
   guideButton.addEventListener('click', async () => {
-    // Validate license before starting the guide
-    const isLicenseValid = await validateLicenseKey(config.secretKey);
-    if (!isLicenseValid) {
+    try {
+      const isLicenseValid = await validateLicenseKey(config.secretKey);
+      if (!isLicenseValid) {
+        await showConfigDialog(
+          i18n.t('errorLabel'),
+          i18n.t('invalidOrExpiredLicense'),
+          i18n.t('errorLabel'),
+          'error'
+        );
+        return;
+      }
+
+      let steps: DriveStep[] | null = await getGuideSteps();
+      if (steps === null) {
+        const shouldCreateGuide = await showNoGuideDialog();
+        if (shouldCreateGuide) {
+          startGuideCreation();
+        }
+      } else if (steps.length == 0) {
+        await showErrorNotification(i18n.t('noStepsInGuide'));
+      } else {
+        const driverObj = driver({
+          showProgress: true,
+          animate: true,
+          steps: steps
+        });
+        openAllFieldGroups()
+        driverObj.drive();
+      }
+    } catch (error) {
+      console.error('Error validating license:', error);
       await showConfigDialog(
         i18n.t('errorLabel'),
-        i18n.t('invalidOrExpiredLicense'),
+        i18n.t('errorValidatingLicense'),
         i18n.t('errorLabel'),
         'error'
       );
-      return;
-    }
-
-    let steps: DriveStep[] | null = await getGuideSteps();
-    if (steps === null) {
-      const shouldCreateGuide = await showNoGuideDialog();
-      if (shouldCreateGuide) {
-        startGuideCreation();
-      }
-    } else if (steps.length == 0) {
-      await showErrorNotification(i18n.t('noStepsInGuide'));
-    } else {
-      const driverObj = driver({
-        showProgress: true,
-        animate: true,
-        steps: steps
-      });
-      openAllFieldGroups()
-      driverObj.drive();
     }
   });
 
   const createButton = createCreateButton(i18n.t('createGuide'));
   createButton.addEventListener('click', async () => {
-    // Validate license before allowing guide creation
-    const isLicenseValid = await validateLicenseKey(config.secretKey);
-    if (!isLicenseValid) {
+    try {
+      const isLicenseValid = await validateLicenseKey(config.secretKey);
+      if (!isLicenseValid) {
+        await showConfigDialog(
+          i18n.t('errorLabel'),
+          i18n.t('invalidOrExpiredLicense'),
+          i18n.t('errorLabel'),
+          'error'
+        );
+        return;
+      }
+
+      const shouldCreateGuide = await showCreateGuideDialog();
+      if (shouldCreateGuide) {
+        startGuideCreation();
+      }
+    } catch (error) {
+      console.error('Error validating license:', error);
       await showConfigDialog(
         i18n.t('errorLabel'),
-        i18n.t('invalidOrExpiredLicense'),
+        i18n.t('errorValidatingLicense'),
         i18n.t('errorLabel'),
         'error'
       );
-      return;
-    }
-
-    const shouldCreateGuide = await showCreateGuideDialog();
-    if (shouldCreateGuide) {
-      startGuideCreation();
     }
   });
 
