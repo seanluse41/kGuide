@@ -1,20 +1,26 @@
 <section class="settings">
-  <h2 class="settings-heading">Settings for kGuide</h2>
-  <p class="kintoneplugin-desc">Please Input the AppID of the guide repository app.</p>
-  <p class="kintoneplugin-desc">If the repository does not exist, click the create repository app button.</p>
+  <h2 class="settings-heading">{{settingsForKGuide}}</h2>
+  <p class="kintoneplugin-desc">{{pleaseInputAppId}}</p>
+  <p class="kintoneplugin-desc">{{ifRepositoryNotExist}}</p>
   <form class="js-submit-settings">
     <p class="kintoneplugin-row">
       <label for="message">
-        Repository App ID:
+        {{repositoryAppId}}
         <input type="text" placeholder="1" id="repository-appid" class="js-text-message kintoneplugin-input-text">
       </label>
     </p>
     <p class="kintoneplugin-row">
-      <button type="button" id="create-repository-button" class="kintoneplugin-button-dialog-ok">Create Repository App</button>
+      <label for="secretKey">
+        {{secretKey}}
+        <input type="text" placeholder="abcd-1234-efgh-5678" id="secretKey" class="js-text-secretKey kintoneplugin-input-text">
+      </label>
     </p>
     <p class="kintoneplugin-row">
-        <button type="button" class="js-cancel-button kintoneplugin-button-dialog-cancel">Cancel</button>
-        <button class="kintoneplugin-button-dialog-ok">Save</button>
+      <button type="button" id="create-repository-button" class="kintoneplugin-button-dialog-ok">{{createRepositoryApp}}</button>
+    </p>
+    <p class="kintoneplugin-row">
+        <button type="button" class="js-cancel-button kintoneplugin-button-dialog-cancel">{{cancel}}</button>
+        <button class="kintoneplugin-button-dialog-ok">{{save}}</button>
     </p>
   </form>
 </section>

@@ -6,15 +6,44 @@ import { showErrorNotification } from './components/notificationUtils';
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 
-(async () => {
+const translateConfigHtml = async () => {
   const i18n = await setupI18n();
 
+  const elements = {
+    'settingsForKGuide': document.querySelector('.settings-heading'),
+    'pleaseInputAppId': document.querySelectorAll('.kintoneplugin-desc')[0],
+    'ifRepositoryNotExist': document.querySelectorAll('.kintoneplugin-desc')[1],
+    'repositoryAppId': document.querySelector('label[for="message"]'),
+    'secretKey': document.querySelector('label[for="secretKey"]'),
+    'createRepositoryApp': document.getElementById('create-repository-button'),
+    'cancel': document.querySelector('.js-cancel-button'),
+    'save': document.querySelector('.kintoneplugin-button-dialog-ok:not(#create-repository-button)')
+  };
+
+  for (const [key, element] of Object.entries(elements)) {
+    if (element) {
+      if (key === 'repositoryAppId' || key === 'secretKey') {
+        const labelText = element.childNodes[0];
+        if (labelText.nodeType === Node.TEXT_NODE) {
+          labelText.textContent = i18n.t(key);
+        }
+      } else {
+        element.textContent = i18n.t(key);
+      }
+    }
+  }
+};
+
+(async () => {
+  const i18n = await setupI18n();
+  await translateConfigHtml();
   const form = document.querySelector<HTMLFormElement>(".js-submit-settings");
   const cancelButton = document.querySelector<HTMLButtonElement>(".js-cancel-button");
   const createRepositoryButton = document.getElementById("create-repository-button");
-  const messageInput = document.querySelector<HTMLInputElement>(".js-text-message");
+  const messageInput = document.querySelector<HTMLInputElement>("#repository-appid");
+  const secretKeyInput = document.querySelector<HTMLInputElement>("#secretKey");
 
-  if (!(form && cancelButton && messageInput)) {
+  if (!(form && cancelButton && messageInput && secretKeyInput)) {
     throw new Error(i18n.t('requiredElementsNotFound'));
   }
 
@@ -23,10 +52,13 @@ const PLUGIN_ID = kintone.$PLUGIN_ID;
   if (config.message) {
     messageInput.value = config.message;
   }
+  if (config.secretKey) {
+    secretKeyInput.value = config.secretKey;
+  }
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    kintone.plugin.app.setConfig({ message: messageInput.value }, () => {
+    kintone.plugin.app.setConfig({ message: messageInput.value, secretKey: secretKeyInput.value }, () => {
       alert(i18n.t('pluginSettingsSaved'));
       window.location.href = "../../flow?app=" + kintone.app.getId();
     });
@@ -38,7 +70,6 @@ const PLUGIN_ID = kintone.$PLUGIN_ID;
 
   createRepositoryButton?.addEventListener("click", async () => {
     let appCreateResponse = await createRepositoryApp()
-    console.log(appCreateResponse)
   });
 
   const createRepositoryApp = async () => {

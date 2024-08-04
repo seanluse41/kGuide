@@ -14,12 +14,12 @@
     "appDeployedSuccessfully": "App deployed successfully",
     "pluginConfigUpdated": "Plugin config updated with new app ID",
     "repositoryCreatedTitle": "Repository Created",
-    "repositoryCreatedMessage": "A new repository app has been created with ID: {{appId}}. The plugin config has been updated.",
+    "repositoryCreatedMessage": "A new repository app has been created with ID: {{appId}}. The plugin config has been updated. Please save the configuration and update the App.",
     "successLabel": "Success",
     "errorCreatingRepository": "Error creating repository app:",
     "errorLabel": "Error",
     "errorCreatingRepositoryMessage": "An error occurred while creating the repository app. Please check the console for more details.",
-    "createNewRepository": "Create New Repository",
+    "createNewRepository": "Ok",
     "noGuideFound": "No kGuide Found",
     "createNewTourTitle": "Create New kGuide?",
     "createNewTourContent": "Any Existing kGuides will be Overwritten.",
@@ -44,5 +44,12 @@
     "dropdownContainerNotFound": "Dropdown container not found for index {{index}}",
     "enterTitle": "Enter title",
     "enterDescription": "Enter description",
-    "remove": "Remove"
+    "remove": "Remove",
+    "settingsForKGuide": "Settings for kGuide",
+    "pleaseInputAppId": "Please input the AppID of the guide repository app.",
+    "ifRepositoryNotExist": "If the repository does not exist, click the create repository app button.",
+    "repositoryAppId": "Repository App ID: ",
+    "createRepositoryApp": "Create Repository App",
+    "save": "Save",
+    "secretKey": "Please enter your subscription key: "
 }
