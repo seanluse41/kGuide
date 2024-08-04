@@ -25,15 +25,15 @@ export class SideMenu {
     const sideMenu = document.createElement('div');
     sideMenu.id = 'guide-side-menu';
     sideMenu.innerHTML = `
-      <h2>Create Guide</h2>
-      <div id="selected-elements-list" class="scrollable-list"></div>
-      <div id="close-button-container"></div>
-      <div id="finish-button-container"></div>
-    `;
-    document.body.appendChild(sideMenu);
+    <h2>${t('createGuide')}</h2>
+    <div id="selected-elements-list" class="scrollable-list"></div>
+    <div id="close-button-container"></div>
+    <div id="finish-button-container"></div>
+  `;
+  document.body.appendChild(sideMenu);
 
     const closeButtonOptions: ButtonOptions = {
-      text: 'Close',
+      text: t('close'),
       type: 'normal',
       className: 'sideMenuCloseButton'
     };
@@ -46,7 +46,7 @@ export class SideMenu {
 
   private createFinishButton(): Button {
     const button = new Button({
-      text: 'Finish Guide Creation',
+      text: t('finishGuideCreation'),
       type: 'submit'
     });
     button.addEventListener('click', () => this.finishGuideCreation());
@@ -119,10 +119,10 @@ export class SideMenu {
       listItem.classList.add('selected-element-item');
       listItem.innerHTML = `
         <div>${index + 1}. ${item.label} (${item.fieldClass})</div>
-        <input type="text" class="title-input" placeholder="Enter title" value="${item.title}" data-index="${index}">
-        <textarea class="description-input" placeholder="Enter description" data-index="${index}">${item.description}</textarea>
+        <input type="text" class="title-input" placeholder="${t('enterTitle')}" value="${item.title}" data-index="${index}">
+        <textarea class="description-input" placeholder="${t('enterDescription')}" data-index="${index}">${item.description}</textarea>
         <div id="dropdown-container-${index}" style="margin: 10px 0;"></div>
-        <button class="remove-element" data-index="${index}">Remove</button>
+        <button class="remove-element" data-index="${index}">${t('remove')}</button>
       `;
       listContainer.appendChild(listItem);
   
@@ -130,12 +130,12 @@ export class SideMenu {
       const dropdownContainer = listItem.querySelector(`#dropdown-container-${index}`);
       if (dropdownContainer) {
         const positionDropdown = new Dropdown({
-          label: 'Position',
+          label: t('position'),
           items: [
-            { label: 'Right', value: 'right' },
-            { label: 'Left', value: 'left' },
-            { label: 'Top', value: 'top' },
-            { label: 'Bottom', value: 'bottom' },
+            { label: t('right'), value: 'right' },
+            { label: t('left'), value: 'left' },
+            { label: t('top'), value: 'top' },
+            { label: t('bottom'), value: 'bottom' },
           ],
           value: item.position,
           id: `position-dropdown-${index}`,
@@ -182,10 +182,10 @@ export class SideMenu {
         throw new Error('Unable to get current app ID');
       }    
       await saveGuideSteps(newGuideSteps, currentAppId.toString());
-      showSuccessNotification('Guide created successfully!');
+      showSuccessNotification(t('guideCreatedSuccessfully'));
     } catch (error) {
       console.error('Error in finishGuideCreation:', error);
-      showErrorNotification('Failed to create guide. Please try again.');
+      showErrorNotification(t('failedToCreateGuide'));
     } finally {
       (await spinner).close();
       this.elementPicker.close();

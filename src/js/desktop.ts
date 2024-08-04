@@ -12,11 +12,6 @@ import { setupI18n } from '../i18n'
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 
-let url = kintone.api.url("/k/v1/records.json")
-console.log(url)
-let user = kintone.getLoginUser()
-console.log(user.language)
-
 kintone.events.on("app.record.create.show", async () => {
   const i18n = await setupI18n();
   const config = kintone.plugin.app.getConfig(PLUGIN_ID);
