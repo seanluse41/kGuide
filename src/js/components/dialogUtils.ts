@@ -1,15 +1,18 @@
 // src/components/dialogUtils.ts
 
 import { Button, Dialog } from 'kintone-ui-component';
+import { setupI18n } from '../../i18n';
 
-export const showConfigDialog = (title: string, content: string, headerText: string, icon: 'info' | 'warning' | 'success' | 'error'): Promise<boolean> => {
+export const showConfigDialog = async (title: string, content: string, headerText: string, icon: 'info' | 'warning' | 'success' | 'error'): Promise<boolean> => {
+  const i18n = await setupI18n();
+
   return new Promise<boolean>((resolve) => {
     const okButton = new Button({
-      text: 'Create New Repository',
+      text: i18n.t('createNewRepository'),
       type: 'submit'
     });
     const cancelButton = new Button({
-      text: 'Cancel',
+      text: i18n.t('cancel'),
       type: 'normal'
     });
 
@@ -41,14 +44,16 @@ export const showConfigDialog = (title: string, content: string, headerText: str
   });
 };
 
-export const showNoGuideDialog = (): Promise<boolean> => {
+export const showNoGuideDialog = async (): Promise<boolean> => {
+  const i18n = await setupI18n();
+
   return new Promise<boolean>((resolve) => {
     const okButton = new Button({
-      text: 'Create New Guide',
+      text: i18n.t('createNewGuide'),
       type: 'submit'
     });
     const cancelButton = new Button({
-      text: 'Cancel',
+      text: i18n.t('cancel'),
       type: 'normal'
     });
 
@@ -57,10 +62,10 @@ export const showNoGuideDialog = (): Promise<boolean> => {
     footerDiv.appendChild(cancelButton);
 
     const noGuideDialog = new Dialog({
-      title: 'No Guide Exists',
-      content: '<div>There is no guide created for this app yet. Would you like to create one?</div>',
+      title: i18n.t('noGuideTitle'),
+      content: `<div>${i18n.t('noGuideContent')}</div>`,
       footer: footerDiv,
-      header: '<div>No Guide Found</div>',
+      header: `<div>${i18n.t('noGuideFound')}</div>`,
       icon: 'info',
       container: document.body,
       footerVisible: true
@@ -80,14 +85,16 @@ export const showNoGuideDialog = (): Promise<boolean> => {
   });
 };
 
-export const showCreateGuideDialog = (): Promise<boolean> => {
+export const showCreateGuideDialog = async (): Promise<boolean> => {
+  const i18n = await setupI18n();
+
   return new Promise<boolean>((resolve) => {
     const okButton = new Button({
-      text: 'Create New Guide',
+      text: i18n.t('createNewGuide'),
       type: 'submit'
     });
     const cancelButton = new Button({
-      text: 'Cancel',
+      text: i18n.t('cancel'),
       type: 'normal'
     });
 
@@ -96,10 +103,10 @@ export const showCreateGuideDialog = (): Promise<boolean> => {
     footerDiv.appendChild(cancelButton);
 
     const createGuideDialog = new Dialog({
-      title: 'Create New Tour?',
-      content: '<div>Any Existing Tours will be Overwritten.</div>',
+      title: i18n.t('createNewTourTitle'),
+      content: `<div>${i18n.t('createNewTourContent')}</div>`,
       footer: footerDiv,
-      header: '<div>Create New Tour?</div>',
+      header: `<div>${i18n.t('createNewTourHeader')}</div>`,
       icon: 'warning',
       container: document.body,
       footerVisible: true

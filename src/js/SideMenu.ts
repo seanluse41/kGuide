@@ -7,6 +7,7 @@ import { saveGuideSteps } from './GuideSteps';
 import { DriveStep } from "driver.js";
 import { CustomElementPicker } from './ElementPicker';
 import { SelectedElement } from './types';
+import { t } from 'i18next';
 
 export class SideMenu {
   private sideMenu: HTMLElement;
@@ -173,7 +174,7 @@ export class SideMenu {
   }
 
   private async finishGuideCreation() {
-    const spinner = showSpinner('ガイド更新中…');
+    const spinner = showSpinner(t("loading"));
     try {
       const newGuideSteps = this.prepareNewGuideSteps();    
       const currentAppId = kintone.app.getId();
@@ -186,7 +187,7 @@ export class SideMenu {
       console.error('Error in finishGuideCreation:', error);
       showErrorNotification('Failed to create guide. Please try again.');
     } finally {
-      spinner.close();
+      (await spinner).close();
       this.elementPicker.close();
       this.close();
     }

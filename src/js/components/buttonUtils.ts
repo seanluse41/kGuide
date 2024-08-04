@@ -12,16 +12,16 @@ export const createButton = (options: ButtonOptions): Button => {
   return new Button(options);
 };
 
-export const createGuideButton = (): Button => {
+export const createGuideButton = (text: string): Button => {
   return createButton({
-    text: 'Start Guide',
+    text: text,
     type: 'submit'
   });
 };
 
-export const createCreateButton = (): Button => {
+export const createCreateButton = (text: string): Button => {
   return createButton({
-    text: 'Create Guide',
+    text: text,
     type: 'submit',
     className: 'guide-button2'
   });

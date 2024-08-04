@@ -1,12 +1,14 @@
 // GuideSteps.ts
 
 import { DriveStep } from 'driver.js';
-
+import { setupI18n } from '../i18n';
+import { showErrorNotification } from './components/notificationUtils';
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 const config = kintone.plugin.app.getConfig(PLUGIN_ID);
 const repositoryAppID = config.message
 
 export async function getGuideSteps(): Promise<DriveStep[] | null> {
+  const i18n = await setupI18n();
   const query = `id = "${kintone.app.getId()}"`;
   const url = kintone.api.url('/k/v1/records.json', true) + `?app=${repositoryAppID}&query=` + encodeURIComponent(query);
 
@@ -27,12 +29,13 @@ export async function getGuideSteps(): Promise<DriveStep[] | null> {
     }));
     return steps;
   } catch (error) {
-    console.error(error);
+    await showErrorNotification(i18n.t('errorFetchingGuideSteps'));
     throw error;
   }
 }
 
 export async function saveGuideSteps(steps: DriveStep[], appId: string): Promise<void> {
+  const i18n = await setupI18n();
   const query = `id = "${appId}"`;
   const getUrl = kintone.api.url('/k/v1/records.json', true) + `?app=${repositoryAppID}&query=` + encodeURIComponent(query);
 
@@ -74,7 +77,7 @@ export async function saveGuideSteps(steps: DriveStep[], appId: string): Promise
       await kintone.api(postUrl, 'POST', postBody);
     }
   } catch (error) {
-    console.error('Error saving guide steps:', error);
+    await showErrorNotification(i18n.t('errorSavingGuideSteps'));
     throw error;
   }
 }

@@ -8,10 +8,17 @@ import { CustomElementPicker } from './ElementPicker';
 import { SideMenu } from './SideMenu';
 import { getGuideSteps } from './GuideSteps';
 import { FieldLayout, SectionLayout, AppLayout } from './types';
+import { setupI18n } from '../i18n'
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 
-kintone.events.on("app.record.create.show", () => {
+let url = kintone.api.url("/k/v1/records.json")
+console.log(url)
+let user = kintone.getLoginUser()
+console.log(user.language)
+
+kintone.events.on("app.record.create.show", async () => {
+  const i18n = await setupI18n();
   const config = kintone.plugin.app.getConfig(PLUGIN_ID);
   const header = kintone.app.record.getHeaderMenuSpaceElement();
   // @ts-ignore
@@ -25,7 +32,7 @@ kintone.events.on("app.record.create.show", () => {
   const elementPicker = new CustomElementPicker({ style: { borderColor: "#0000ff" } });
   const sideMenu = new SideMenu(elementPicker);
 
-  const guideButton = createGuideButton();
+  const guideButton = createGuideButton(i18n.t('startGuide'));
   guideButton.addEventListener('click', async () => {
     let steps: DriveStep[] | null = await getGuideSteps();
     if (steps === null) {
@@ -34,7 +41,7 @@ kintone.events.on("app.record.create.show", () => {
         startGuideCreation();
       }
     } else if (steps.length == 0) {
-      showErrorNotification()
+      await showErrorNotification(i18n.t('noStepsInGuide'));
     } else {
       const driverObj = driver({
         showProgress: true,
@@ -46,7 +53,7 @@ kintone.events.on("app.record.create.show", () => {
     }
   });
 
-  const createButton = createCreateButton();
+  const createButton = createCreateButton(i18n.t('createGuide'));
   createButton.addEventListener('click', async () => {
     const shouldCreateGuide = await showCreateGuideDialog();
     if (shouldCreateGuide) {
