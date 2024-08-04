@@ -1,6 +1,7 @@
 /* eslint-env node */
 const path = require("path");
 const KintonePlugin = require("@kintone/webpack-plugin-kintone-plugin");
+const TerserPlugin = require('terser-webpack-plugin');
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -36,6 +37,23 @@ module.exports = {
           ],
         },
       },
+    ],
+  },
+  optimization: {
+    minimize: isProduction,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          compress: {
+            drop_console: true, // Removes console.* statements
+          },
+          mangle: true,
+          output: {
+            comments: false,
+          },
+        },
+        extractComments: false,
+      }),
     ],
   },
   plugins: [
