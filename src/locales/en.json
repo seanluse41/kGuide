@@ -51,5 +51,9 @@
     "repositoryAppId": "Repository App ID: ",
     "createRepositoryApp": "Create Repository App",
     "save": "Save",
-    "secretKey": "Please enter your subscription key: "
+    "secretKey": "Please enter your subscription key: ",
+    "validateLicenseKey": "Validate License Key",
+    "pleaseEnterSecretKey": "Please enter a secret key.",
+    "invalidOrExpiredLicense": "Your license is invalid or has expired. Please renew your license to use this feature.",
+    "errorValidatingLicense": "An error occurred while validating the license. Please try again later."
 }

@@ -1,8 +1,8 @@
 // config.ts
 
 import { setupI18n } from '../i18n';
-import { showConfigDialog } from './components/dialogUtils';
 import { showErrorNotification } from './components/notificationUtils';
+import { showConfigDialog } from './components/dialogUtils';
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 
@@ -72,7 +72,7 @@ const translateConfigHtml = async () => {
     let appCreateResponse = await createRepositoryApp()
   });
 
-  const createRepositoryApp = async () => {
+  async function createRepositoryApp() {
     try {
       // Step 1: Create the app
       const createAppBody = {

@@ -1,6 +1,6 @@
 // desktop.ts
 
-import { showNoGuideDialog, showCreateGuideDialog } from './components/dialogUtils';
+import { showNoGuideDialog, showCreateGuideDialog, showConfigDialog } from './components/dialogUtils';
 import { createGuideButton, createCreateButton } from './components/buttonUtils';
 import { showErrorNotification } from './components/notificationUtils';
 import { driver, DriveStep } from "driver.js";
@@ -8,7 +8,8 @@ import { CustomElementPicker } from './ElementPicker';
 import { SideMenu } from './SideMenu';
 import { getGuideSteps } from './GuideSteps';
 import { FieldLayout, SectionLayout, AppLayout } from './types';
-import { setupI18n } from '../i18n'
+import { setupI18n } from '../i18n';
+import { validateLicenseKey } from './components/licenseUtils';
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 
@@ -29,6 +30,18 @@ kintone.events.on("app.record.create.show", async () => {
 
   const guideButton = createGuideButton(i18n.t('startGuide'));
   guideButton.addEventListener('click', async () => {
+    // Validate license before starting the guide
+    const isLicenseValid = await validateLicenseKey(config.secretKey);
+    if (!isLicenseValid) {
+      await showConfigDialog(
+        i18n.t('errorLabel'),
+        i18n.t('invalidOrExpiredLicense'),
+        i18n.t('errorLabel'),
+        'error'
+      );
+      return;
+    }
+
     let steps: DriveStep[] | null = await getGuideSteps();
     if (steps === null) {
       const shouldCreateGuide = await showNoGuideDialog();
@@ -50,6 +63,18 @@ kintone.events.on("app.record.create.show", async () => {
 
   const createButton = createCreateButton(i18n.t('createGuide'));
   createButton.addEventListener('click', async () => {
+    // Validate license before allowing guide creation
+    const isLicenseValid = await validateLicenseKey(config.secretKey);
+    if (!isLicenseValid) {
+      await showConfigDialog(
+        i18n.t('errorLabel'),
+        i18n.t('invalidOrExpiredLicense'),
+        i18n.t('errorLabel'),
+        'error'
+      );
+      return;
+    }
+
     const shouldCreateGuide = await showCreateGuideDialog();
     if (shouldCreateGuide) {
       startGuideCreation();
