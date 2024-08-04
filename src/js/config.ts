@@ -71,7 +71,6 @@ const createRepositoryApp = async () => {
               label: 'Step Number',
               noLabel: false,
               required: true,
-              unique: true
             },
             field: {
               type: 'SINGLE_LINE_TEXT',
