@@ -139,7 +139,7 @@ kintone.events.on("app.record.create.show", async () => {
         if (parentElement) {
           sideMenu.addElement(parentElement);
         } else {
-          console.log("No parent field element found");
+          console.error("No parent field element found");
         }
         elementPicker.highlightElement(null);
       },

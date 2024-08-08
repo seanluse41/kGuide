@@ -34,17 +34,13 @@ function generateChecksum(token: string, expiration: string): string {
 
 const storeToken = (token: string): void => {
   try {
-    console.log('Decoding JWT token');
     const decodedToken = decodeJwt(token);
-    console.log('JWT token decoded successfully');
-
     const expiration = decodedToken.exp.toString();
     const checksum = generateChecksum(token, expiration);
 
     localStorage.setItem(LICENSE_TOKEN_KEY, token);
     localStorage.setItem(TOKEN_EXPIRATION_KEY, expiration);
     localStorage.setItem(TOKEN_CHECKSUM_KEY, checksum);
-    console.log('Token, expiration, and checksum stored in localStorage');
   } catch (error) {
     console.error('Error in storeToken:', error);
     throw error;
@@ -56,30 +52,24 @@ export const isTokenValid = (): boolean => {
   const expiration = localStorage.getItem(TOKEN_EXPIRATION_KEY);
   const storedChecksum = localStorage.getItem(TOKEN_CHECKSUM_KEY);
   
-  console.log('Checking token validity from localStorage');
-  
   if (!token || !expiration || !storedChecksum) {
-    console.log('No token, expiration, or checksum found in localStorage');
     return false;
   }
   
   // Verify checksum
   const calculatedChecksum = generateChecksum(token, expiration);
   if (calculatedChecksum !== storedChecksum) {
-    console.log('Token or expiration checksum mismatch, possible tampering detected');
     return false;
   }
   
   const expirationTime = parseInt(expiration, 10) * 1000; // Convert to milliseconds
   const currentTime = Date.now();
   const isValid = currentTime < expirationTime;
-  console.log(`Token validity: ${isValid}, Expiration: ${new Date(expirationTime)}, Current: ${new Date(currentTime)}`);
   return isValid;
 };
 
 export async function validateLicenseKey(secretKey: string): Promise<boolean> {
   if (isTokenValid()) {
-    console.log('Existing token is still valid');
     return true;
   }
 
@@ -92,25 +82,20 @@ export async function validateLicenseKey(secretKey: string): Promise<boolean> {
   };
 
   try {
-    console.log('Sending license validation request');
     const [body, status, responseHeaders] = await kintone.plugin.app.proxy(PLUGIN_ID, url, method, headers, {});
-    console.log('License validation response received', { status, body });
 
     if (status === 200) {
       const responseData: ValidationResponse = JSON.parse(body);
 
       if (responseData.status === 'active' && responseData.token) {
-        console.log('License is active, storing token');
         try {
           storeToken(responseData.token);
-          console.log('Token stored successfully');
           return true;
         } catch (storeError) {
           console.error('Error storing token:', storeError);
           return false;
         }
       } else if (responseData.status === 'expired') {
-        console.log('License is expired');
         showErrorNotification(t('invalidOrExpiredLicense'));
         return false;
       }
