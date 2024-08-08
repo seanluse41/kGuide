@@ -74,6 +74,7 @@ kintone.events.on("app.record.create.show", async () => {
   createButton.addEventListener('click', async () => {
     try {
       const isLicenseValid = await validateLicenseKey(config.secretKey);
+
       if (!isLicenseValid) {
         await showConfigDialog(
           i18n.t('errorLabel'),
