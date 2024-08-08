@@ -21,7 +21,8 @@ function decodeJwt(token: string): any {
   return JSON.parse(jsonPayload);
 }
 
-function generateChecksum(data: string): string {
+function generateChecksum(token: string, expiration: string): string {
+  const data = token + expiration;
   let hash = 0;
   for (let i = 0; i < data.length; i++) {
     const char = data.charCodeAt(i);
@@ -37,12 +38,13 @@ const storeToken = (token: string): void => {
     const decodedToken = decodeJwt(token);
     console.log('JWT token decoded successfully');
 
-    const checksum = generateChecksum(token);
+    const expiration = decodedToken.exp.toString();
+    const checksum = generateChecksum(token, expiration);
 
     localStorage.setItem(LICENSE_TOKEN_KEY, token);
-    localStorage.setItem(TOKEN_EXPIRATION_KEY, decodedToken.exp.toString());
+    localStorage.setItem(TOKEN_EXPIRATION_KEY, expiration);
     localStorage.setItem(TOKEN_CHECKSUM_KEY, checksum);
-    console.log('Token and checksum stored in localStorage');
+    console.log('Token, expiration, and checksum stored in localStorage');
   } catch (error) {
     console.error('Error in storeToken:', error);
     throw error;
@@ -62,9 +64,9 @@ export const isTokenValid = (): boolean => {
   }
   
   // Verify checksum
-  const calculatedChecksum = generateChecksum(token);
+  const calculatedChecksum = generateChecksum(token, expiration);
   if (calculatedChecksum !== storedChecksum) {
-    console.log('Token checksum mismatch, possible tampering detected');
+    console.log('Token or expiration checksum mismatch, possible tampering detected');
     return false;
   }
   
