@@ -55,5 +55,9 @@
     "validateLicenseKey": "ライセンスキーを検証",
     "pleaseEnterSecretKey": "シークレットキーを入力してください。",
     "invalidOrExpiredLicense": "ライセンスが無効であるか、期限が切れています。この機能を使用するには、ライセンスを更新してください。",
-    "errorValidatingLicense": "ライセンスの検証中にエラーが発生しました。後でもう一度お試しください。"
+    "errorValidatingLicense": "ライセンスの検証中にエラーが発生しました。後でもう一度お試しください。",
+    "progressText": "{{current}} / {{total}}",
+    "next": "次",
+    "previous": "前",
+    "finish": "終了"
 }

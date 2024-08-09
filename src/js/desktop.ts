@@ -1,7 +1,7 @@
 // desktop.ts
 
 import { showNoGuideDialog, showCreateGuideDialog, showConfigDialog } from './components/dialogUtils';
-import { createGuideButton, createCreateButton } from './components/buttonUtils';
+import { createGuideButton, createCreateButton, createButton as createCustomButton } from './components/buttonUtils';
 import { showErrorNotification } from './components/notificationUtils';
 import { driver, DriveStep } from "driver.js";
 import { CustomElementPicker } from './ElementPicker';
@@ -51,13 +51,8 @@ kintone.events.on("app.record.create.show", async () => {
       } else if (steps.length == 0) {
         await showErrorNotification(i18n.t('noStepsInGuide'));
       } else {
-        const driverObj = driver({
-          showProgress: true,
-          animate: true,
-          steps: steps
-        });
-        openAllFieldGroups()
-        driverObj.drive();
+        await openAllFieldGroups();
+        initTour(steps)
       }
     } catch (error) {
       console.error('Error validating license:', error);
@@ -69,6 +64,44 @@ kintone.events.on("app.record.create.show", async () => {
       );
     }
   });
+
+  const initTour = async (steps: DriveStep[]) => {
+    const i18n = await setupI18n();
+    const driverObj = driver({
+      showProgress: true,
+      progressText: i18n.t("progressText", { current: "{{current}}", total: "{{total}}" }),
+      animate: true,
+      steps: steps,
+      popoverClass: "driver-popover-class",
+      allowClose: false,
+      nextBtnText: i18n.t("next"),
+      prevBtnText: i18n.t("previous"),
+      doneBtnText: i18n.t("finish"),
+      onHighlightStarted: (element) => {
+        if (element && element instanceof HTMLElement) {
+          element.style.setProperty('z-index', '903', 'important');
+        }
+      },
+      onDeselected: (element) => {
+        if (element && element instanceof HTMLElement) {
+          element.style.removeProperty('z-index');
+        }
+      },
+      onPopoverRender: (popover, { config, state }) => {
+        // Check if state.activeIndex is defined and not the last step
+        if ((state?.activeIndex ?? 0) < steps.length - 1) {
+          const finishButton = document.createElement("button");
+          finishButton.innerText = i18n.t("finish");          
+          finishButton.addEventListener('click', () => {
+            driverObj.destroy();
+          });
+  
+          popover.footerButtons.appendChild(finishButton);
+        }
+      },
+    });
+    driverObj.drive();
+  }
 
   const createButton = createCreateButton(i18n.t('createGuide'));
   createButton.addEventListener('click', async () => {

@@ -55,5 +55,9 @@
     "validateLicenseKey": "Validate License Key",
     "pleaseEnterSecretKey": "Please enter a secret key.",
     "invalidOrExpiredLicense": "Your license is invalid or has expired. Please renew your license to use this feature.",
-    "errorValidatingLicense": "An error occurred while validating the license. Please try again later."
+    "errorValidatingLicense": "An error occurred while validating the license. Please try again later.",
+    "progressText": "{{current}} of {{total}}",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Finish"
 }
