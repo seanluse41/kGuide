@@ -28,6 +28,9 @@ kintone.events.on("app.record.create.show", async () => {
   const elementPicker = new CustomElementPicker({ style: { borderColor: "#0000ff" } });
   const sideMenu = new SideMenu(elementPicker);
 
+  let resizeObserver: ResizeObserver | null = null;
+  let driverObj: any;
+
   const guideButton = createGuideButton(i18n.t('startGuide'));
   guideButton.addEventListener('click', async () => {
     try {
@@ -67,7 +70,7 @@ kintone.events.on("app.record.create.show", async () => {
 
   const initTour = async (steps: DriveStep[]) => {
     const i18n = await setupI18n();
-    const driverObj = driver({
+    driverObj = driver({
       showProgress: true,
       progressText: i18n.t("progressText", { current: "{{current}}", total: "{{total}}" }),
       animate: true,
@@ -80,22 +83,35 @@ kintone.events.on("app.record.create.show", async () => {
       onHighlightStarted: (element) => {
         if (element && element instanceof HTMLElement) {
           element.style.setProperty('z-index', '903', 'important');
+
+          if (resizeObserver) {
+            resizeObserver.disconnect();
+          }
+          resizeObserver = new ResizeObserver(() => {
+            if (driverObj) {
+              driverObj.refresh();
+            }
+          });
+          resizeObserver.observe(element);
         }
       },
       onDeselected: (element) => {
         if (element && element instanceof HTMLElement) {
           element.style.removeProperty('z-index');
         }
+        if (resizeObserver) {
+          resizeObserver.disconnect();
+        }
       },
       onPopoverRender: (popover, { config, state }) => {
         // Check if state.activeIndex is defined and not the last step
         if ((state?.activeIndex ?? 0) < steps.length - 1) {
           const finishButton = document.createElement("button");
-          finishButton.innerText = i18n.t("finish");          
+          finishButton.innerText = i18n.t("finish");
           finishButton.addEventListener('click', () => {
             driverObj.destroy();
           });
-  
+
           popover.footerButtons.appendChild(finishButton);
         }
       },
