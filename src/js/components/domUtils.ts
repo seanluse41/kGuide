@@ -57,11 +57,9 @@ function createModalCloseObserver(): MutationObserver {
                     if (node instanceof Element && isModal(node)) {
                         console.log('Modal closed:', node);
                         if (driverObj && activeStepBeforeModal !== null) {
-                            console.log(`Returning to step ${activeStepBeforeModal}`);
                             driverObj.moveTo(activeStepBeforeModal);
                             activeStepBeforeModal = null; // Reset the stored step
                         } else {
-                            console.log("Unable to return to previous step, restarting tour");
                             driverObj?.drive();
                         }
                     }
