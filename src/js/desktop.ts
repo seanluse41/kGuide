@@ -30,6 +30,8 @@ kintone.events.on("app.record.create.show", async () => {
   const sideMenu = new SideMenu(elementPicker);
 
   let resizeObserver: ResizeObserver | null = null;
+  let listboxKeydownListener: ((event: KeyboardEvent) => void) | undefined;
+
   let driverObj: any;
 
   const guideButton = createGuideButton(i18n.t('startGuide'));
@@ -109,6 +111,13 @@ kintone.events.on("app.record.create.show", async () => {
         if (modalCloseObserver) {
           modalCloseObserver.disconnect()
         }
+        // if (dropdownObserver) {
+        //   dropdownObserver.disconnect()
+        // }
+        if (searchboxListObserver) {
+          searchboxListObserver.disconnect()
+        }
+        removeListboxKeydownListener();
       },
       onPopoverRender: (popover, { config, state }) => {
         if ((state?.activeIndex ?? 0) < steps.length - 1) {
@@ -118,13 +127,51 @@ kintone.events.on("app.record.create.show", async () => {
             driverObj.destroy();
             modalObserver.disconnect(); // Stop observing when tour is finished
             modalCloseObserver.disconnect()
+            //dropdownObserver.disconnect()
+            searchboxListObserver.disconnect()
           });
           popover.footerButtons.appendChild(finishButton);
         }
       },
     });
-    const { modalObserver, modalCloseObserver } = initObservers(driverObj);
+    const { modalObserver, modalCloseObserver, dropdownObserver, searchboxListObserver } = initObservers(driverObj);
     driverObj.drive();
+
+    // Add event listener for the escape key
+    document.addEventListener('keydown', handleEscapeKey);
+
+    // Add event listener to prevent listbox from closing on Escape
+    addListboxKeydownListener();
+  };
+
+  const handleEscapeKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      if (driverObj) {
+        driverObj.destroy();
+      }
+      document.removeEventListener('keydown', handleEscapeKey);
+      removeListboxKeydownListener();
+    }
+  };
+
+  const addListboxKeydownListener = () => {
+    listboxKeydownListener = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault(); // Prevent default behavior (closing the listbox)
+        if (driverObj) {
+          driverObj.destroy();
+        }
+      }
+    };
+  
+    document.addEventListener('keydown', listboxKeydownListener);
+  };
+
+  const removeListboxKeydownListener = () => {
+    if (listboxKeydownListener) {
+      document.removeEventListener('keydown', listboxKeydownListener);
+      listboxKeydownListener = undefined;
+    }
   };
 
   const createButton = createCreateButton(i18n.t('createGuide'));
