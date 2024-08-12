@@ -316,20 +316,3 @@
 .guide-button2 {
   margin-left: 16px;
 }
-
-.driver-popover-class {
-  z-index: 901 !important;
-}
-
-.driver-overlay {
-  z-index: 900 !important;
-  pointer-events: auto !important;
-}
-
-.kguide-interactive-modal {
-  z-index: 905 !important; /* Higher than driver.js elements */
-}
-
-.driver-active * {
-  pointer-events: auto !important;
-}

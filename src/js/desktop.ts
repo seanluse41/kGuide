@@ -10,6 +10,7 @@ import { getGuideSteps } from './GuideSteps';
 import { FieldLayout, SectionLayout, AppLayout } from './types';
 import { setupI18n } from '../i18n';
 import { validateLicenseKey } from './components/licenseUtils';
+import { initObservers } from './components/domUtils';
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 
@@ -82,8 +83,6 @@ kintone.events.on("app.record.create.show", async () => {
       doneBtnText: i18n.t("finish"),
       onHighlightStarted: (element) => {
         if (element && element instanceof HTMLElement) {
-          element.style.setProperty('z-index', '903', 'important');
-
           if (resizeObserver) {
             resizeObserver.disconnect();
           }
@@ -96,28 +95,37 @@ kintone.events.on("app.record.create.show", async () => {
         }
       },
       onDeselected: (element) => {
-        if (element && element instanceof HTMLElement) {
-          element.style.removeProperty('z-index');
-        }
         if (resizeObserver) {
           resizeObserver.disconnect();
         }
       },
+      onDestroyed: (element) => {
+        if (resizeObserver) {
+          resizeObserver.disconnect();
+        }
+        if (modalObserver) {
+          modalObserver.disconnect();
+        }
+        if (modalCloseObserver) {
+          modalCloseObserver.disconnect()
+        }
+      },
       onPopoverRender: (popover, { config, state }) => {
-        // Check if state.activeIndex is defined and not the last step
         if ((state?.activeIndex ?? 0) < steps.length - 1) {
           const finishButton = document.createElement("button");
           finishButton.innerText = i18n.t("finish");
           finishButton.addEventListener('click', () => {
             driverObj.destroy();
+            modalObserver.disconnect(); // Stop observing when tour is finished
+            modalCloseObserver.disconnect()
           });
-
           popover.footerButtons.appendChild(finishButton);
         }
       },
     });
+    const { modalObserver, modalCloseObserver } = initObservers(driverObj);
     driverObj.drive();
-  }
+  };
 
   const createButton = createCreateButton(i18n.t('createGuide'));
   createButton.addEventListener('click', async () => {
