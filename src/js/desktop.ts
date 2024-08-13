@@ -102,20 +102,8 @@ kintone.events.on("app.record.create.show", async () => {
         }
       },
       onDestroyed: (element) => {
-        if (resizeObserver) {
-          resizeObserver.disconnect();
-        }
-        if (modalObserver) {
-          modalObserver.disconnect();
-        }
-        if (modalCloseObserver) {
-          modalCloseObserver.disconnect()
-        }
-        // if (dropdownObserver) {
-        //   dropdownObserver.disconnect()
-        // }
-        if (searchboxListObserver) {
-          searchboxListObserver.disconnect()
+        if (observer) {
+          observer.disconnect();
         }
         removeListboxKeydownListener();
       },
@@ -125,23 +113,17 @@ kintone.events.on("app.record.create.show", async () => {
           finishButton.innerText = i18n.t("finish");
           finishButton.addEventListener('click', () => {
             driverObj.destroy();
-            modalObserver.disconnect(); // Stop observing when tour is finished
-            modalCloseObserver.disconnect()
-            //dropdownObserver.disconnect()
-            searchboxListObserver.disconnect()
+            observer.disconnect()
           });
           popover.footerButtons.appendChild(finishButton);
         }
       },
     });
-    const { modalObserver, modalCloseObserver, dropdownObserver, searchboxListObserver } = initObservers(driverObj);
+    const observer = initObservers(driverObj);
     driverObj.drive();
 
-    // Add event listener for the escape key
-    document.addEventListener('keydown', handleEscapeKey);
-
     // Add event listener to prevent listbox from closing on Escape
-    addListboxKeydownListener();
+    //addListboxKeydownListener();
   };
 
   const handleEscapeKey = (event: KeyboardEvent) => {

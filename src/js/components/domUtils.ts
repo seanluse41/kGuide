@@ -1,141 +1,134 @@
-// domUtils.ts
-
 import { driver } from "driver.js";
 
 let driverObj: ReturnType<typeof driver> | null = null;
-let activeStepBeforeModal: number | null = null;
-let activeStepBeforeDropdown: number | null = null;
-let activeStepBeforeSearchbox: number | null = null;
+let originalListboxPosition: string | null = null;
 
-const isModal = (element: Element): boolean => {
-    return element.classList.contains('ocean-ui-dialog');
-}
-
-const isDropdown = (element: Element): boolean => {
-    const role = element.getAttribute('role');
-    return role === 'menu' || role === 'listbox';
-}
+const isModal = (element: Element): boolean => element.classList.contains('ocean-ui-dialog');
+const isDropdown = (element: Element): boolean => ['menu', 'listbox'].includes(element.getAttribute('role') || '');
+const isSearchboxList = (element: Element): boolean => element.classList.contains('entityselect-searchbox-list-cybozu');
 
 export function initObservers(driverInstance: ReturnType<typeof driver>) {
     driverObj = driverInstance;
-    const modalObserver = createModalObserver();
-    const modalCloseObserver = createModalCloseObserver();
-    const dropdownObserver = createDropdownObserver();
-    const searchboxListObserver = createSearchboxListObserver();
+    const observer = createMutationObserver();
+    observer.observe(document.body, { 
+        childList: true, 
+        subtree: true, 
+        attributes: true,
+        attributeFilter: ['aria-expanded', 'style'],
+        characterData: true
+    });
+    return observer;
+}
 
-    modalObserver.observe(document.body, { childList: true, subtree: true });
-    modalCloseObserver.observe(document.body, { childList: true, subtree: true });
-    dropdownObserver.observe(document.body, { attributes: true, subtree: true });
+function createMutationObserver(): MutationObserver {
+    return new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+                handleChildListMutation(mutation);
+            } else if (mutation.type === 'attributes') {
+                handleAttributeMutation(mutation);
+            }
+        });
+    });
+}
 
-    const searchboxList = document.querySelector('.entityselect-searchbox-list-cybozu');
-    if (searchboxList) {
-        searchboxListObserver.observe(searchboxList, { childList: true, attributes: true, attributeFilter: ['style'] });
+function handleChildListMutation(mutation: MutationRecord) {
+    const target = mutation.target;
+    if (target instanceof Element && isSearchboxList(target)) {
+        handleSearchboxListContentChange(target as HTMLElement);
     }
 
-    return { modalObserver, modalCloseObserver, dropdownObserver, searchboxListObserver };
-}
-
-function createModalObserver(): MutationObserver {
-    return new MutationObserver(async (mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'childList') {
-                mutation.addedNodes.forEach((node) => {
-                    if (node instanceof Element && isModal(node)) {
-                        if (driverObj) {
-                            // Store the current active step
-                            const currentStep = driverObj.getActiveIndex();
-                            activeStepBeforeModal = currentStep !== undefined ? currentStep : null;
-
-                            const modalHighlight = {
-                                element: node,
-                                // popover: {
-                                //   title: i18n.t('modalTitle', 'Modal Detected'),
-                                //   description: i18n.t('modalDescription', 'A modal has appeared during the tour.'),
-                                //   position: 'bottom'
-                                // }
-                            };
-
-                            driverObj.highlight(modalHighlight);
-                        }
-                    }
-                });
+    mutation.addedNodes.forEach((node) => {
+        if (node instanceof Element) {
+            if (isModal(node)) {
+                handleModalAppearance(node);
+            } else if (isSearchboxList(node)) {
+                handleSearchboxListAppearance(node);
             }
-        });
+        }
+    });
+
+    mutation.removedNodes.forEach((node) => {
+        if (node instanceof Element) {
+            if (isModal(node)) {
+                handleModalDisappearance();
+            } else if (isSearchboxList(node)) {
+                handleSearchboxListDisappearance();
+            }
+        }
     });
 }
 
-function createModalCloseObserver(): MutationObserver {
-    return new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'childList') {
-                mutation.removedNodes.forEach((node) => {
-                    if (node instanceof Element && isModal(node)) {
-                        console.log('Modal closed:', node);
-                        if (driverObj && activeStepBeforeModal !== null) {
-                            driverObj.moveTo(activeStepBeforeModal);
-                            activeStepBeforeModal = null; // Reset the stored step
-                        } else {
-                            driverObj?.drive();
-                        }
-                    }
-                });
-            }
-        });
-    });
+function handleAttributeMutation(mutation: MutationRecord) {
+    const target = mutation.target;
+    if (target instanceof Element) {
+        if (isDropdown(target) && mutation.attributeName === 'aria-expanded') {
+            handleDropdownChange(target);
+        } else if (isSearchboxList(target) && mutation.attributeName === 'style') {
+            handleSearchboxListStyleChange(target as HTMLElement);
+        }
+    }
 }
 
-function createDropdownObserver(): MutationObserver {
-    return new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'aria-expanded') {
-                const target = mutation.target;
-                if (target instanceof Element && isDropdown(target)) {
-                    console.log("its a dropdown.")
-                }
-            }
-        });
-    });
+function handleSearchboxListAppearance(listElement: Element) {
+    if (driverObj && listElement instanceof HTMLElement) {
+        originalListboxPosition = listElement.style.position;
+        listElement.style.position = 'static';
+        driverObj.highlight({ element: listElement });
+    }
 }
 
-function highlightSearchboxList(listElement: Element) {
-    if (driverObj) {
-        const currentStep = driverObj.getActiveIndex();
-        activeStepBeforeSearchbox = currentStep !== undefined ? currentStep : null;
-        
-        driverObj.highlight({
-            element: listElement,
-            // popover: {
-            //     title: 'Searchbox List Opened',
-            //     description: 'A searchbox list has been opened.',
-            //     side: 'bottom'
-            // }
-        });
+function handleSearchboxListContentChange(listElement: HTMLElement) {
+    if (listElement.children.length === 0) {
+        returnToOriginalStep();
+    } else {
+        handleSearchboxListAppearance(listElement);
+    }
+}
+
+function handleSearchboxListStyleChange(listElement: HTMLElement) {
+    if (listElement.style.display === 'none') {
+        returnToOriginalStep();
+    } else {
+        handleSearchboxListAppearance(listElement);
     }
 }
 
 function returnToOriginalStep() {
-    console.log("returning to step", activeStepBeforeSearchbox)
-    if (driverObj && activeStepBeforeSearchbox !== null) {
-        driverObj.moveTo(activeStepBeforeSearchbox);
-        activeStepBeforeSearchbox = null;
+    if (driverObj) {
+        const currentHighlightedElement = document.querySelector('.driver-highlighted-element');
+        if (currentHighlightedElement instanceof HTMLElement && isSearchboxList(currentHighlightedElement)) {
+            currentHighlightedElement.style.position = originalListboxPosition || '';
+        }
+        
+        const currentStep = driverObj.getActiveIndex();
+        if (currentStep !== null && currentStep !== undefined) {
+            driverObj.moveTo(currentStep);
+        } else {
+            driverObj.drive();
+        }
+        
+        originalListboxPosition = null;
+    } else {
+        console.error("driverObj is null, cannot return to original step");
     }
 }
 
-function createSearchboxListObserver(): MutationObserver {
-    return new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'childList') {
-                const target = mutation.target as HTMLElement;
-                if (target.classList.contains('entityselect-searchbox-list-cybozu')) {
-                    console.log(target.children.length)
-                    console.log(target.style)
-                    if (target.children.length === 0 || target.style.display === 'none') {
-                        highlightSearchboxList(target);
-                    } else {
-                        returnToOriginalStep();
-                    }
-                }
-            }
-        });
-    });
+function handleSearchboxListDisappearance() {
+    returnToOriginalStep();
+}
+
+function handleModalAppearance(modalElement: Element) {
+    if (driverObj) {
+        driverObj.highlight({ element: modalElement });
+    }
+}
+
+function handleModalDisappearance() {
+    returnToOriginalStep();
+}
+
+function handleDropdownChange(dropdownElement: Element) {
+    console.log("Dropdown state changed:", dropdownElement);
+    // Add your dropdown handling logic here if needed
 }
