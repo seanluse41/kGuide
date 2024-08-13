@@ -51,6 +51,8 @@ function handleChildListMutation(mutation: MutationRecord) {
                 handleModalAppearance(node);
             } else if (isSearchboxList(node)) {
                 handleSearchboxListAppearance(node);
+            } else if (isRichTextSizeBox(node)) {
+                handleRichTextSizeBoxAppearance(node)
             }
         }
     });
@@ -75,6 +77,8 @@ function handleAttributeMutation(mutation: MutationRecord) {
             handleSearchboxListStyleChange(target as HTMLElement);
         } else if (isDropdownOption(target) && mutation.attributeName === 'aria-checked') {
             handleDropdownOptionSelection(target as HTMLElement);
+        } else if (isRichTextSizeBox(target) && mutation.attributeName === 'style') {
+            handleRichTextSizeBoxStyleChange(target as HTMLElement);
         }
     }
 }
@@ -83,14 +87,16 @@ function handleAttributeMutation(mutation: MutationRecord) {
 // Element Type Checks
 //
 
-const isModal = (element: Element): boolean => element.classList.contains('ocean-ui-dialog');
+const isModal = (element: Element): boolean => element.classList.contains('ocean-ui-dialog') || element.classList.contains('modal-dialog');
 const isDropdown = (element: Element): boolean =>
     element.classList.contains('gaia-argoui-selectmenu') &&
     element.getAttribute('role') === 'menu';
 const isSearchboxList = (element: Element): boolean => element.classList.contains('entityselect-searchbox-list-cybozu');
-function isDropdownOption(element: Element): boolean {
+const isDropdownOption = (element: Element): boolean => {
     return element.getAttribute('role') === 'menuitemradio';
 }
+const isRichTextSizeBox = (element: Element): boolean => element.classList.contains('goog-menu') && element.getAttribute('role') === 'listbox';
+
 //
 // Element Handlers
 //
@@ -169,7 +175,7 @@ function handleDropdownStyleChange(dropdownElement: HTMLElement) {
 function handleDropdownClick(event: MouseEvent) {
     const dropdownElement = event.currentTarget as HTMLElement;
     const isClickInsideOptions = (event.target as HTMLElement).closest('[role="menuitemradio"]');
-    
+
     if (!isClickInsideOptions) {
         // Click is on the dropdown field itself, not on an option
         revertDropdownChanges(dropdownElement);
@@ -212,6 +218,19 @@ function revertDropdownChanges(dropdownElement: HTMLElement) {
             driverObj.refresh();
         }
     }
+}
+
+function handleRichTextSizeBoxAppearance(listElement: Element) {
+    if (driverObj && listElement instanceof HTMLElement) {
+        // Do Stuff.
+        console.log("rich text box opened")
+        // returnToOriginalStep()
+    }
+}
+
+function handleRichTextSizeBoxStyleChange(listElement : Element) {
+    console.log("rich text box display none")
+    // returnToOriginalStep();
 }
 
 //
