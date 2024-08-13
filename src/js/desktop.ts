@@ -102,6 +102,7 @@ kintone.events.on("app.record.create.show", async () => {
         if (resizeObserver) {
           resizeObserver.disconnect();
         }
+        observers.disconnect();
         removeEscapeKeyListener();
         removeListboxKeydownListener();
       },
