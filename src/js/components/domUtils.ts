@@ -5,6 +5,11 @@ let driverObj: ReturnType<typeof driver> | null = null;
 let originalListboxPosition: string | null = null;
 let escapeKeyListener: ((event: KeyboardEvent) => void) | null = null;
 let listboxKeydownListener: ((event: KeyboardEvent) => void) | null = null;
+let lastDisplayState: string | null = null;
+let originalDropdownParent: HTMLElement | null = null;
+let originalDropdownStyle: string = '';
+let originalParentWidth: string = '';
+let isDropdownMoved: boolean = false;
 
 //
 // Driver.js Initialization and Observers
@@ -13,11 +18,11 @@ let listboxKeydownListener: ((event: KeyboardEvent) => void) | null = null;
 export function initObservers(driverInstance: ReturnType<typeof driver>) {
     driverObj = driverInstance;
     const observer = createMutationObserver();
-    observer.observe(document.body, { 
-        childList: true, 
-        subtree: true, 
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
         attributes: true,
-        attributeFilter: ['aria-expanded', 'style'],
+        attributeFilter: ['aria-expanded', 'aria-checked', 'style'],
         characterData: true
     });
     return observer;
@@ -64,10 +69,12 @@ function handleChildListMutation(mutation: MutationRecord) {
 function handleAttributeMutation(mutation: MutationRecord) {
     const target = mutation.target;
     if (target instanceof Element) {
-        if (isDropdown(target) && mutation.attributeName === 'aria-expanded') {
-            handleDropdownChange(target);
+        if (isDropdown(target) && mutation.attributeName === 'style') {
+            handleDropdownStyleChange(target as HTMLElement);
         } else if (isSearchboxList(target) && mutation.attributeName === 'style') {
             handleSearchboxListStyleChange(target as HTMLElement);
+        } else if (isDropdownOption(target) && mutation.attributeName === 'aria-checked') {
+            handleDropdownOptionSelection(target as HTMLElement);
         }
     }
 }
@@ -77,9 +84,13 @@ function handleAttributeMutation(mutation: MutationRecord) {
 //
 
 const isModal = (element: Element): boolean => element.classList.contains('ocean-ui-dialog');
-const isDropdown = (element: Element): boolean => ['menu', 'listbox'].includes(element.getAttribute('role') || '');
+const isDropdown = (element: Element): boolean =>
+    element.classList.contains('gaia-argoui-selectmenu') &&
+    element.getAttribute('role') === 'menu';
 const isSearchboxList = (element: Element): boolean => element.classList.contains('entityselect-searchbox-list-cybozu');
-
+function isDropdownOption(element: Element): boolean {
+    return element.getAttribute('role') === 'menuitemradio';
+}
 //
 // Element Handlers
 //
@@ -116,9 +127,91 @@ function handleModalDisappearance() {
     returnToOriginalStep();
 }
 
-function handleDropdownChange(dropdownElement: Element) {
-    console.log("Dropdown state changed:", dropdownElement);
-    // Add your dropdown handling logic here if needed
+function handleDropdownStyleChange(dropdownElement: HTMLElement) {
+    const currentDisplay = dropdownElement.style.display;
+
+    if (currentDisplay !== lastDisplayState) {
+        lastDisplayState = currentDisplay;
+        if (currentDisplay !== 'none') {
+            // Dropdown is being shown
+            const activeElement = document.querySelector('.driver-active-element');
+            if (activeElement instanceof HTMLElement) {
+                originalDropdownParent = dropdownElement.parentElement;
+                originalDropdownStyle = dropdownElement.style.cssText;
+                originalParentWidth = activeElement.style.width;
+
+                // Move dropdown to be a child of the active element
+                activeElement.appendChild(dropdownElement);
+                dropdownElement.style.position = 'static';
+                dropdownElement.style.left = 'auto';
+                dropdownElement.style.top = 'auto';
+
+                // Set parent width to auto
+                activeElement.style.width = 'auto';
+
+                isDropdownMoved = true;
+
+                // Add click event listener to the dropdown element itself
+                dropdownElement.addEventListener('click', handleDropdownClick);
+
+                // Re-highlight the current step
+                if (driverObj) {
+                    driverObj.refresh();
+                }
+            }
+        } else {
+            // Dropdown is being hidden
+            revertDropdownChanges(dropdownElement);
+        }
+    }
+}
+
+function handleDropdownClick(event: MouseEvent) {
+    const dropdownElement = event.currentTarget as HTMLElement;
+    const isClickInsideOptions = (event.target as HTMLElement).closest('[role="menuitemradio"]');
+    
+    if (!isClickInsideOptions) {
+        // Click is on the dropdown field itself, not on an option
+        revertDropdownChanges(dropdownElement);
+    }
+}
+
+function handleDropdownOptionSelection(optionElement: HTMLElement) {
+    if (isDropdownMoved) {
+        const dropdownElement = optionElement.closest('.gaia-argoui-selectmenu');
+        if (dropdownElement) {
+            revertDropdownChanges(dropdownElement as HTMLElement);
+        }
+    }
+}
+
+function revertDropdownChanges(dropdownElement: HTMLElement) {
+    if (originalDropdownParent) {
+        // Remove click event listener from the dropdown element
+        dropdownElement.removeEventListener('click', handleDropdownClick);
+
+        // Revert DOM changes
+        originalDropdownParent.appendChild(dropdownElement);
+        dropdownElement.style.cssText = originalDropdownStyle;
+        dropdownElement.style.display = "none";
+
+        // Restore original parent width
+        const activeElement = document.querySelector('.driver-active-element');
+        if (activeElement instanceof HTMLElement) {
+            activeElement.style.width = originalParentWidth;
+        }
+
+        // Reset variables
+        originalDropdownParent = null;
+        originalDropdownStyle = '';
+        originalParentWidth = '';
+        isDropdownMoved = false;
+
+        // Re-highlight the current step
+        if (driverObj) {
+            driverObj.refresh();
+        }
+    }
 }
 
 //
