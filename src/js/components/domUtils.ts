@@ -40,11 +40,6 @@ function createMutationObserver(): MutationObserver {
 //
 
 function handleChildListMutation(mutation: MutationRecord) {
-    const target = mutation.target;
-    if (target instanceof Element && isSearchboxList(target)) {
-        handleSearchboxListContentChange(target as HTMLElement);
-    }
-
     mutation.addedNodes.forEach((node) => {
         if (node instanceof Element) {
             if (isModal(node)) {
@@ -93,15 +88,9 @@ function handleSearchboxListAppearance(listElement: Element) {
     if (driverObj && listElement instanceof HTMLElement) {
         originalListboxPosition = listElement.style.position;
         listElement.style.position = 'static';
-        driverObj.highlight({ element: listElement });
-    }
-}
-
-function handleSearchboxListContentChange(listElement: HTMLElement) {
-    if (listElement.children.length === 0) {
-        returnToOriginalStep();
-    } else {
-        handleSearchboxListAppearance(listElement);
+        // return to original step re-highlights the searchbox AND its listbox because the box is static now.
+        // if only there was a way to do this without setting to static...
+        returnToOriginalStep()
     }
 }
 
@@ -142,14 +131,12 @@ function returnToOriginalStep() {
         if (currentHighlightedElement instanceof HTMLElement && isSearchboxList(currentHighlightedElement)) {
             currentHighlightedElement.style.position = originalListboxPosition || '';
         }
-        
         const currentStep = driverObj.getActiveIndex();
         if (currentStep !== null && currentStep !== undefined) {
             driverObj.moveTo(currentStep);
         } else {
             driverObj.drive();
         }
-        
         originalListboxPosition = null;
     } else {
         console.error("driverObj is null, cannot return to original step");
