@@ -1,11 +1,14 @@
 import { driver } from "driver.js";
+import { FieldLayout, SectionLayout, AppLayout } from '../types';
 
 let driverObj: ReturnType<typeof driver> | null = null;
 let originalListboxPosition: string | null = null;
+let escapeKeyListener: ((event: KeyboardEvent) => void) | null = null;
+let listboxKeydownListener: ((event: KeyboardEvent) => void) | null = null;
 
-const isModal = (element: Element): boolean => element.classList.contains('ocean-ui-dialog');
-const isDropdown = (element: Element): boolean => ['menu', 'listbox'].includes(element.getAttribute('role') || '');
-const isSearchboxList = (element: Element): boolean => element.classList.contains('entityselect-searchbox-list-cybozu');
+//
+// Driver.js Initialization and Observers
+//
 
 export function initObservers(driverInstance: ReturnType<typeof driver>) {
     driverObj = driverInstance;
@@ -31,6 +34,10 @@ function createMutationObserver(): MutationObserver {
         });
     });
 }
+
+//
+// Mutation Handlers
+//
 
 function handleChildListMutation(mutation: MutationRecord) {
     const target = mutation.target;
@@ -70,6 +77,18 @@ function handleAttributeMutation(mutation: MutationRecord) {
     }
 }
 
+//
+// Element Type Checks
+//
+
+const isModal = (element: Element): boolean => element.classList.contains('ocean-ui-dialog');
+const isDropdown = (element: Element): boolean => ['menu', 'listbox'].includes(element.getAttribute('role') || '');
+const isSearchboxList = (element: Element): boolean => element.classList.contains('entityselect-searchbox-list-cybozu');
+
+//
+// Element Handlers
+//
+
 function handleSearchboxListAppearance(listElement: Element) {
     if (driverObj && listElement instanceof HTMLElement) {
         originalListboxPosition = listElement.style.position;
@@ -94,6 +113,29 @@ function handleSearchboxListStyleChange(listElement: HTMLElement) {
     }
 }
 
+function handleSearchboxListDisappearance() {
+    returnToOriginalStep();
+}
+
+function handleModalAppearance(modalElement: Element) {
+    if (driverObj) {
+        driverObj.highlight({ element: modalElement });
+    }
+}
+
+function handleModalDisappearance() {
+    returnToOriginalStep();
+}
+
+function handleDropdownChange(dropdownElement: Element) {
+    console.log("Dropdown state changed:", dropdownElement);
+    // Add your dropdown handling logic here if needed
+}
+
+//
+// Tour Navigation
+//
+
 function returnToOriginalStep() {
     if (driverObj) {
         const currentHighlightedElement = document.querySelector('.driver-highlighted-element');
@@ -114,21 +156,74 @@ function returnToOriginalStep() {
     }
 }
 
-function handleSearchboxListDisappearance() {
-    returnToOriginalStep();
-}
+//
+// Field Group Management
+//
 
-function handleModalAppearance(modalElement: Element) {
-    if (driverObj) {
-        driverObj.highlight({ element: modalElement });
+export async function openAllFieldGroups() {
+    try {
+        const layout: AppLayout = await kintone.api(kintone.api.url('/k/v1/app/form/layout', true), 'GET', { app: kintone.app.getId() });
+        const openGroups = (fields: FieldLayout[]) => {
+            fields.forEach(field => {
+                if (field.type === 'GROUP') {
+                    kintone.app.record.setGroupFieldOpen(field.code, true);
+                    if (field.layout) {
+                        openGroups(field.layout);
+                    }
+                }
+            });
+        };
+        layout.layout.forEach((section: SectionLayout) => {
+            if (section.type === 'GROUP' && section.code) {
+                kintone.app.record.setGroupFieldOpen(section.code, true);
+            }
+            if (section.fields) {
+                openGroups(section.fields);
+            }
+        });
+    } catch (error) {
+        console.error('Error opening field groups:', error);
     }
 }
 
-function handleModalDisappearance() {
-    returnToOriginalStep();
+//
+// Escape Key EventListeners
+//
+
+export function addEscapeKeyListener(callback: () => void) {
+    escapeKeyListener = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+            callback();
+            removeEscapeKeyListener();
+        }
+    };
+    document.addEventListener('keydown', escapeKeyListener);
 }
 
-function handleDropdownChange(dropdownElement: Element) {
-    console.log("Dropdown state changed:", dropdownElement);
-    // Add your dropdown handling logic here if needed
+export function removeEscapeKeyListener() {
+    if (escapeKeyListener) {
+        document.removeEventListener('keydown', escapeKeyListener);
+        escapeKeyListener = null;
+    }
+}
+
+//
+// Listbox KeyDown EventListeners
+//
+
+export function addListboxKeydownListener(callback: () => void) {
+    listboxKeydownListener = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            callback();
+        }
+    };
+    document.addEventListener('keydown', listboxKeydownListener);
+}
+
+export function removeListboxKeydownListener() {
+    if (listboxKeydownListener) {
+        document.removeEventListener('keydown', listboxKeydownListener);
+        listboxKeydownListener = null;
+    }
 }

@@ -1,16 +1,15 @@
 // desktop.ts
 
 import { showNoGuideDialog, showCreateGuideDialog, showConfigDialog } from './components/dialogUtils';
-import { createGuideButton, createCreateButton, createButton as createCustomButton } from './components/buttonUtils';
+import { createGuideButton, createCreateButton } from './components/buttonUtils';
 import { showErrorNotification } from './components/notificationUtils';
 import { driver, DriveStep } from "driver.js";
 import { CustomElementPicker } from './ElementPicker';
 import { SideMenu } from './SideMenu';
 import { getGuideSteps } from './GuideSteps';
-import { FieldLayout, SectionLayout, AppLayout } from './types';
 import { setupI18n } from '../i18n';
 import { validateLicenseKey } from './components/licenseUtils';
-import { initObservers } from './components/domUtils';
+import { initObservers, openAllFieldGroups, addEscapeKeyListener, removeEscapeKeyListener, addListboxKeydownListener, removeListboxKeydownListener } from './components/domUtils';
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 
@@ -30,8 +29,6 @@ kintone.events.on("app.record.create.show", async () => {
   const sideMenu = new SideMenu(elementPicker);
 
   let resizeObserver: ResizeObserver | null = null;
-  let listboxKeydownListener: ((event: KeyboardEvent) => void) | undefined;
-
   let driverObj: any;
 
   const guideButton = createGuideButton(i18n.t('startGuide'));
@@ -102,9 +99,10 @@ kintone.events.on("app.record.create.show", async () => {
         }
       },
       onDestroyed: (element) => {
-        if (observer) {
-          observer.disconnect();
+        if (resizeObserver) {
+          resizeObserver.disconnect();
         }
+        removeEscapeKeyListener();
         removeListboxKeydownListener();
       },
       onPopoverRender: (popover, { config, state }) => {
@@ -113,47 +111,25 @@ kintone.events.on("app.record.create.show", async () => {
           finishButton.innerText = i18n.t("finish");
           finishButton.addEventListener('click', () => {
             driverObj.destroy();
-            observer.disconnect()
           });
           popover.footerButtons.appendChild(finishButton);
         }
       },
     });
-    const observer = initObservers(driverObj);
+    const observers = initObservers(driverObj);
     driverObj.drive();
 
-    // Add event listener to prevent listbox from closing on Escape
-    //addListboxKeydownListener();
-  };
-
-  const handleEscapeKey = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
+    addEscapeKeyListener(() => {
       if (driverObj) {
         driverObj.destroy();
       }
-      document.removeEventListener('keydown', handleEscapeKey);
-      removeListboxKeydownListener();
-    }
-  };
+    });
 
-  const addListboxKeydownListener = () => {
-    listboxKeydownListener = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault(); // Prevent default behavior (closing the listbox)
-        if (driverObj) {
-          driverObj.destroy();
-        }
+    addListboxKeydownListener(() => {
+      if (driverObj) {
+        driverObj.destroy();
       }
-    };
-  
-    document.addEventListener('keydown', listboxKeydownListener);
-  };
-
-  const removeListboxKeydownListener = () => {
-    if (listboxKeydownListener) {
-      document.removeEventListener('keydown', listboxKeydownListener);
-      listboxKeydownListener = undefined;
-    }
+    });
   };
 
   const createButton = createCreateButton(i18n.t('createGuide'));
@@ -185,32 +161,6 @@ kintone.events.on("app.record.create.show", async () => {
       );
     }
   });
-
-  async function openAllFieldGroups() {
-    try {
-      const layout: AppLayout = await kintone.api(kintone.api.url('/k/v1/app/form/layout', true), 'GET', { app: kintone.app.getId() });
-      const openGroups = (fields: FieldLayout[]) => {
-        fields.forEach(field => {
-          if (field.type === 'GROUP') {
-            kintone.app.record.setGroupFieldOpen(field.code, true);
-            if (field.layout) {
-              openGroups(field.layout);
-            }
-          }
-        });
-      };
-      layout.layout.forEach((section: SectionLayout) => {
-        if (section.type === 'GROUP' && section.code) {
-          kintone.app.record.setGroupFieldOpen(section.code, true);
-        }
-        if (section.fields) {
-          openGroups(section.fields);
-        }
-      });
-    } catch (error) {
-      console.error('Error opening field groups:', error);
-    }
-  }
 
   async function startGuideCreation() {
     await openAllFieldGroups();
