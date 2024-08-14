@@ -1,4 +1,4 @@
-import { ElementPickerOptions } from './types';
+import { ElementPickerOptions } from "./types";
 import { ElementPicker } from "pick-dom-element";
 
 export class CustomElementPicker {
@@ -10,7 +10,7 @@ export class CustomElementPicker {
 
   highlightElement(el: HTMLElement | null) {
     if (this.currentHighlightedElement) {
-      this.currentHighlightedElement.style.outline = '';
+      this.currentHighlightedElement.style.outline = "";
     }
     if (el) {
       el.style.outline = `2px solid #3498db`;
@@ -30,11 +30,23 @@ export class CustomElementPicker {
     let currentElement: HTMLElement | null = el;
 
     while (currentElement) {
-      if (Array.from(currentElement.classList).some(className => pattern.test(className))) {
+      if (
+        Array.from(currentElement.classList).some((className) =>
+          pattern.test(className),
+        )
+      ) {
         return currentElement;
-      } else if (Array.from(currentElement.classList).some(className => pattern2.test(className))) {
+      } else if (
+        Array.from(currentElement.classList).some((className) =>
+          pattern2.test(className),
+        )
+      ) {
         return currentElement;
-      } else if (Array.from(currentElement.classList).some(className => pattern3.test(className))) {
+      } else if (
+        Array.from(currentElement.classList).some((className) =>
+          pattern3.test(className),
+        )
+      ) {
         return currentElement;
       }
       currentElement = currentElement.parentElement;

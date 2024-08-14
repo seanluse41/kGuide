@@ -1,5 +1,5 @@
 {
-  "name": "kGuide",
+  "name": "kguide",
   "version": "0.1.0",
   "scripts": {
     "prestart": "npm run build",
@@ -9,7 +9,7 @@
     "build:prod": "cross-env NODE_ENV=production webpack",
     "build-and-upload": "npm run build:prod && npm run upload",
     "dts-gen": "kintone-dts-gen",
-    "lint": "eslint src",
+    "lint": "eslint src --fix",
     "upload": "dotenv -- kintone-plugin-uploader dist/plugin.zip --watch --waiting-dialog-ms 3000"
   },
   "dependencies": {

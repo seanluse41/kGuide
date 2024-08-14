@@ -1,13 +1,17 @@
 // SideMenu.ts
 
-import { Dropdown, Button } from 'kintone-ui-component';
-import { ButtonOptions } from './components/buttonUtils';
-import { showErrorNotification, showSuccessNotification, showSpinner } from './components/notificationUtils';
-import { saveGuideSteps } from './GuideSteps';
+import { Dropdown, Button } from "kintone-ui-component";
+import { ButtonOptions } from "./components/buttonUtils";
+import {
+  showErrorNotification,
+  showSuccessNotification,
+  showSpinner,
+} from "./components/notificationUtils";
+import { saveGuideSteps } from "./GuideSteps";
 import { DriveStep } from "driver.js";
-import { CustomElementPicker } from './ElementPicker';
-import { SelectedElement } from './types';
-import { t } from 'i18next';
+import { CustomElementPicker } from "./ElementPicker";
+import { SelectedElement } from "./types";
+import { t } from "i18next";
 
 export class SideMenu {
   private sideMenu: HTMLElement;
@@ -22,45 +26,44 @@ export class SideMenu {
   }
 
   private createSideMenu(): HTMLElement {
-    const sideMenu = document.createElement('div');
-    sideMenu.id = 'guide-side-menu';
+    const sideMenu = document.createElement("div");
+    sideMenu.id = "guide-side-menu";
     sideMenu.innerHTML = `
-    <h2>${t('createGuide')}</h2>
+    <h2>${t("createGuide")}</h2>
     <div id="selected-elements-list" class="scrollable-list"></div>
     <div id="close-button-container"></div>
     <div id="finish-button-container"></div>
   `;
-  document.body.appendChild(sideMenu);
+    document.body.appendChild(sideMenu);
 
     const closeButtonOptions: ButtonOptions = {
-      text: t('close'),
-      type: 'normal',
-      className: 'sideMenuCloseButton'
+      text: t("close"),
+      type: "normal",
+      className: "sideMenuCloseButton",
     };
     const closeButton = new Button(closeButtonOptions);
-    closeButton.addEventListener('click', () => this.close());
-    document.getElementById('close-button-container')!.appendChild(closeButton);
-
+    closeButton.addEventListener("click", () => this.close());
+    document.getElementById("close-button-container")?.appendChild(closeButton);
     return sideMenu;
   }
 
   private createFinishButton(): Button {
     const button = new Button({
-      text: t('finishGuideCreation'),
-      type: 'submit'
+      text: t("finishGuideCreation"),
+      type: "submit",
     });
-    button.addEventListener('click', () => this.finishGuideCreation());
+    button.addEventListener("click", () => this.finishGuideCreation());
     button.disabled = true;
-    document.getElementById('finish-button-container')!.appendChild(button);
+    document.getElementById("finish-button-container")?.appendChild(button);
     return button;
   }
 
   show() {
-    this.sideMenu.classList.add('open');
+    this.sideMenu.classList.add("open");
   }
 
   close() {
-    this.sideMenu.classList.remove('open');
+    this.sideMenu.classList.remove("open");
     this.selectedElements = [];
     this.updateSelectedElementsList();
     this.updateFinishButtonState();
@@ -76,7 +79,13 @@ export class SideMenu {
     const label = this.getElementLabel(element);
     const fieldClass = this.getFieldClass(element);
     if (fieldClass) {
-      this.selectedElements.push({ fieldClass, label, title: '', description: '', position: 'right' });
+      this.selectedElements.push({
+        fieldClass,
+        label,
+        title: "",
+        description: "",
+        position: "right",
+      });
       this.updateSelectedElementsList();
       this.updateFinishButtonState();
     } else {
@@ -85,8 +94,8 @@ export class SideMenu {
   }
 
   private getElementLabel(element: HTMLElement): string {
-    const labelElement = element.querySelector('.control-label-text-gaia');
-    return labelElement ? labelElement.textContent || 'No Label' : 'No Label';
+    const labelElement = element.querySelector(".control-label-text-gaia");
+    return labelElement ? labelElement.textContent || "No Label" : "No Label";
   }
 
   private getFieldClass(element: HTMLElement): string | null {
@@ -110,40 +119,42 @@ export class SideMenu {
   }
 
   private updateSelectedElementsList() {
-    const listContainer = document.getElementById('selected-elements-list');
+    const listContainer = document.getElementById("selected-elements-list");
     if (!listContainer) return;
-  
-    listContainer.innerHTML = '';
+
+    listContainer.innerHTML = "";
     this.selectedElements.forEach((item, index) => {
-      const listItem = document.createElement('div');
-      listItem.classList.add('selected-element-item');
+      const listItem = document.createElement("div");
+      listItem.classList.add("selected-element-item");
       listItem.innerHTML = `
         <div>${index + 1}. ${item.label} (${item.fieldClass})</div>
-        <input type="text" class="title-input" placeholder="${t('enterTitle')}" value="${item.title}" data-index="${index}">
-        <textarea class="description-input" placeholder="${t('enterDescription')}" data-index="${index}">${item.description}</textarea>
+        <input type="text" class="title-input" placeholder="${t("enterTitle")}" value="${item.title}" data-index="${index}">
+        <textarea class="description-input" placeholder="${t("enterDescription")}" data-index="${index}">${item.description}</textarea>
         <div id="dropdown-container-${index}" style="margin: 10px 0;"></div>
-        <button class="remove-element" data-index="${index}">${t('remove')}</button>
+        <button class="remove-element" data-index="${index}">${t("remove")}</button>
       `;
       listContainer.appendChild(listItem);
-  
+
       // Create and add the dropdown
-      const dropdownContainer = listItem.querySelector(`#dropdown-container-${index}`);
+      const dropdownContainer = listItem.querySelector(
+        `#dropdown-container-${index}`,
+      );
       if (dropdownContainer) {
         const positionDropdown = new Dropdown({
-          label: t('position'),
+          label: t("position"),
           items: [
-            { label: t('right'), value: 'right' },
-            { label: t('left'), value: 'left' },
-            { label: t('top'), value: 'top' },
-            { label: t('bottom'), value: 'bottom' },
+            { label: t("right"), value: "right" },
+            { label: t("left"), value: "left" },
+            { label: t("top"), value: "top" },
+            { label: t("bottom"), value: "bottom" },
           ],
           value: item.position,
           id: `position-dropdown-${index}`,
         });
         dropdownContainer.appendChild(positionDropdown);
-  
+
         // Add event listener for dropdown change
-        positionDropdown.addEventListener('change', (event: Event) => {
+        positionDropdown.addEventListener("change", (event: Event) => {
           const customEvent = event as unknown as { detail: { value: string } };
           this.selectedElements[index].position = customEvent.detail.value;
         });
@@ -153,18 +164,33 @@ export class SideMenu {
     });
 
     // Add event listeners to inputs and remove buttons
-    listContainer.querySelectorAll('.title-input, .description-input').forEach(input => {
-      input.addEventListener('input', (e) => {
-        const index = parseInt((e.target as HTMLElement).getAttribute('data-index') || '0');
-        const field = (e.target as HTMLElement).classList.contains('title-input') ? 'title' : 'description';
-        this.selectedElements[index][field] = (e.target as HTMLInputElement).value;
+    listContainer
+      .querySelectorAll(".title-input, .description-input")
+      .forEach((input) => {
+        input.addEventListener("input", (e) => {
+          const index = parseInt(
+            (e.target as HTMLElement).getAttribute("data-index") || "0",
+            10,
+          );
+          const field = (e.target as HTMLElement).classList.contains(
+            "title-input",
+          )
+            ? "title"
+            : "description";
+          this.selectedElements[index][field] = (
+            e.target as HTMLInputElement
+          ).value;
+        });
       });
-    });
 
-    const removeButtons = listContainer.getElementsByClassName('remove-element');
-    Array.from(removeButtons).forEach(button => {
-      button.addEventListener('click', (e) => {
-        const index = parseInt((e.target as HTMLElement).getAttribute('data-index') || '0');
+    const removeButtons =
+      listContainer.getElementsByClassName("remove-element");
+    Array.from(removeButtons).forEach((button) => {
+      button.addEventListener("click", (e) => {
+        const index = parseInt(
+          (e.target as HTMLElement).getAttribute("data-index") || "0",
+          10,
+        );
         this.selectedElements.splice(index, 1);
         this.updateSelectedElementsList();
       });
@@ -176,16 +202,16 @@ export class SideMenu {
   private async finishGuideCreation() {
     const spinner = showSpinner(t("loading"));
     try {
-      const newGuideSteps = this.prepareNewGuideSteps();    
+      const newGuideSteps = this.prepareNewGuideSteps();
       const currentAppId = kintone.app.getId();
       if (currentAppId === null) {
-        throw new Error('Unable to get current app ID');
-      }    
+        throw new Error("Unable to get current app ID");
+      }
       await saveGuideSteps(newGuideSteps, currentAppId.toString());
-      showSuccessNotification(t('guideCreatedSuccessfully'));
+      showSuccessNotification(t("guideCreatedSuccessfully"));
     } catch (error) {
-      console.error('Error in finishGuideCreation:', error);
-      showErrorNotification(t('failedToCreateGuide'));
+      console.error("Error in finishGuideCreation:", error);
+      showErrorNotification(t("failedToCreateGuide"));
     } finally {
       (await spinner).close();
       this.elementPicker.close();
@@ -194,14 +220,16 @@ export class SideMenu {
   }
 
   private prepareNewGuideSteps(): DriveStep[] {
-    return this.selectedElements.map(({ fieldClass, title, description, position }, index) => ({
-      element: `.${fieldClass}`,
-      popover: {
-        title: title,
-        description: description,
-        side: position as 'top' | 'right' | 'bottom' | 'left',
-        align: "end"
-      }
-    }));
+    return this.selectedElements.map(
+      ({ fieldClass, title, description, position }, index) => ({
+        element: `.${fieldClass}`,
+        popover: {
+          title: title,
+          description: description,
+          side: position as "top" | "right" | "bottom" | "left",
+          align: "end",
+        },
+      }),
+    );
   }
 }

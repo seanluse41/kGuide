@@ -1,78 +1,98 @@
 // desktop.ts
 
-import { showNoGuideDialog, showCreateGuideDialog, showConfigDialog } from './components/dialogUtils';
-import { createGuideButton, createCreateButton } from './components/buttonUtils';
-import { showErrorNotification } from './components/notificationUtils';
+import {
+  showNoGuideDialog,
+  showCreateGuideDialog,
+  showConfigDialog,
+} from "./components/dialogUtils";
+import {
+  createGuideButton,
+  createCreateButton,
+} from "./components/buttonUtils";
+import { showErrorNotification } from "./components/notificationUtils";
 import { driver, DriveStep } from "driver.js";
-import { CustomElementPicker } from './ElementPicker';
-import { SideMenu } from './SideMenu';
-import { getGuideSteps } from './GuideSteps';
-import { setupI18n } from '../i18n';
-import { validateLicenseKey } from './components/licenseUtils';
-import { initObservers, openAllFieldGroups, addEscapeKeyListener, removeEscapeKeyListener, addListboxKeydownListener, removeListboxKeydownListener, resetRichTextSizeBoxState, resetDatePickerState } from './components/domUtils';
+import { CustomElementPicker } from "./ElementPicker";
+import { SideMenu } from "./SideMenu";
+import { getGuideSteps } from "./GuideSteps";
+import { setupI18n } from "../i18n";
+import { validateLicenseKey } from "./components/licenseUtils";
+import {
+  initObservers,
+  openAllFieldGroups,
+  addEscapeKeyListener,
+  removeEscapeKeyListener,
+  addListboxKeydownListener,
+  removeListboxKeydownListener,
+  resetRichTextSizeBoxState,
+  resetDatePickerState,
+} from "./components/domUtils";
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 
 kintone.events.on("app.record.create.show", async () => {
   const i18n = await setupI18n();
-  const config = kintone.plugin.app.getConfig(PLUGIN_ID);
+  const pluginConfig = kintone.plugin.app.getConfig(PLUGIN_ID);
   const header = kintone.app.record.getHeaderMenuSpaceElement();
   // @ts-ignore
-  let permissions = kintone.app.getPermissions()
+  const permissions = kintone.app.getPermissions();
   if (header === null) {
     throw new Error("The header element is unavailable on this page");
   }
 
-  header.classList.add('guide-header');
+  header.classList.add("guide-header");
 
-  const elementPicker = new CustomElementPicker({ style: { borderColor: "#0000ff" } });
+  const elementPicker = new CustomElementPicker({
+    style: { borderColor: "#0000ff" },
+  });
   const sideMenu = new SideMenu(elementPicker);
 
   let resizeObserver: ResizeObserver | null = null;
   let driverObj: any;
 
-  const guideButton = createGuideButton(i18n.t('startGuide'));
-  guideButton.addEventListener('click', async () => {
+  const guideButton = createGuideButton(i18n.t("startGuide"));
+  guideButton.addEventListener("click", async () => {
     try {
-      const isLicenseValid = await validateLicenseKey(config.secretKey);
+      const isLicenseValid = await validateLicenseKey(pluginConfig.secretKey);
       if (!isLicenseValid) {
         await showConfigDialog(
-          i18n.t('errorLabel'),
-          i18n.t('invalidOrExpiredLicense'),
-          i18n.t('errorLabel'),
-          'error'
+          i18n.t("errorLabel"),
+          i18n.t("invalidOrExpiredLicense"),
+          i18n.t("errorLabel"),
+          "error",
         );
         return;
       }
 
-      let steps: DriveStep[] | null = await getGuideSteps();
+      const steps: DriveStep[] | null = await getGuideSteps();
       if (steps === null) {
         const shouldCreateGuide = await showNoGuideDialog();
         if (shouldCreateGuide) {
           startGuideCreation();
         }
-      } else if (steps.length == 0) {
-        await showErrorNotification(i18n.t('noStepsInGuide'));
+      } else if (steps.length === 0) {
+        await showErrorNotification(i18n.t("noStepsInGuide"));
       } else {
         await openAllFieldGroups();
-        initTour(steps)
+        initTour(steps);
       }
     } catch (error) {
-      console.error('Error validating license:', error);
+      console.error("Error validating license:", error);
       await showConfigDialog(
-        i18n.t('errorLabel'),
-        i18n.t('errorValidatingLicense'),
-        i18n.t('errorLabel'),
-        'error'
+        i18n.t("errorLabel"),
+        i18n.t("errorValidatingLicense"),
+        i18n.t("errorLabel"),
+        "error",
       );
     }
   });
 
   const initTour = async (steps: DriveStep[]) => {
-    const i18n = await setupI18n();
     driverObj = driver({
       showProgress: true,
-      progressText: i18n.t("progressText", { current: "{{current}}", total: "{{total}}" }),
+      progressText: i18n.t("progressText", {
+        current: "{{current}}",
+        total: "{{total}}",
+      }),
       animate: true,
       steps: steps,
       popoverClass: "driver-popover-class",
@@ -106,13 +126,13 @@ kintone.events.on("app.record.create.show", async () => {
         removeEscapeKeyListener();
         removeListboxKeydownListener();
         resetRichTextSizeBoxState();
-        resetDatePickerState()
+        resetDatePickerState();
       },
       onPopoverRender: (popover, { config, state }) => {
         if ((state?.activeIndex ?? 0) < steps.length - 1) {
           const finishButton = document.createElement("button");
           finishButton.innerText = i18n.t("finish");
-          finishButton.addEventListener('click', () => {
+          finishButton.addEventListener("click", () => {
             driverObj.destroy();
           });
           popover.footerButtons.appendChild(finishButton);
@@ -135,17 +155,17 @@ kintone.events.on("app.record.create.show", async () => {
     });
   };
 
-  const createButton = createCreateButton(i18n.t('createGuide'));
-  createButton.addEventListener('click', async () => {
+  const createButton = createCreateButton(i18n.t("createGuide"));
+  createButton.addEventListener("click", async () => {
     try {
-      const isLicenseValid = await validateLicenseKey(config.secretKey);
+      const isLicenseValid = await validateLicenseKey(pluginConfig.secretKey);
 
       if (!isLicenseValid) {
         await showConfigDialog(
-          i18n.t('errorLabel'),
-          i18n.t('invalidOrExpiredLicense'),
-          i18n.t('errorLabel'),
-          'error'
+          i18n.t("errorLabel"),
+          i18n.t("invalidOrExpiredLicense"),
+          i18n.t("errorLabel"),
+          "error",
         );
         return;
       }
@@ -155,12 +175,12 @@ kintone.events.on("app.record.create.show", async () => {
         startGuideCreation();
       }
     } catch (error) {
-      console.error('Error validating license:', error);
+      console.error("Error validating license:", error);
       await showConfigDialog(
-        i18n.t('errorLabel'),
-        i18n.t('errorValidatingLicense'),
-        i18n.t('errorLabel'),
-        'error'
+        i18n.t("errorLabel"),
+        i18n.t("errorValidatingLicense"),
+        i18n.t("errorLabel"),
+        "error",
       );
     }
   });
@@ -184,12 +204,12 @@ kintone.events.on("app.record.create.show", async () => {
       },
       elementFilter: (el: HTMLElement) => {
         return elementPicker.getParentFieldElement(el) !== null;
-      }
+      },
     });
   }
 
   header.appendChild(guideButton);
-  if (permissions.editApp == true) {
+  if (permissions.editApp === true) {
     header.appendChild(createButton);
   }
 });

@@ -1,22 +1,27 @@
 // src/components/dialogUtils.ts
 
-import { Button, Dialog } from 'kintone-ui-component';
-import { setupI18n } from '../../i18n';
+import { Button, Dialog } from "kintone-ui-component";
+import { setupI18n } from "../../i18n";
 
-export const showConfigDialog = async (title: string, content: string, headerText: string, icon: 'info' | 'warning' | 'success' | 'error'): Promise<boolean> => {
+export const showConfigDialog = async (
+  title: string,
+  content: string,
+  headerText: string,
+  icon: "info" | "warning" | "success" | "error",
+): Promise<boolean> => {
   const i18n = await setupI18n();
 
   return new Promise<boolean>((resolve) => {
     const okButton = new Button({
-      text: i18n.t('createNewRepository'),
-      type: 'submit'
+      text: i18n.t("createNewRepository"),
+      type: "submit",
     });
     const cancelButton = new Button({
-      text: i18n.t('cancel'),
-      type: 'normal'
+      text: i18n.t("cancel"),
+      type: "normal",
     });
 
-    const footerDiv = document.createElement('div');
+    const footerDiv = document.createElement("div");
     footerDiv.appendChild(okButton);
     footerDiv.appendChild(cancelButton);
 
@@ -27,15 +32,15 @@ export const showConfigDialog = async (title: string, content: string, headerTex
       header: `<div>${headerText}</div>`,
       icon: icon,
       container: document.body,
-      footerVisible: true
+      footerVisible: true,
     });
 
-    okButton.addEventListener('click', () => {
+    okButton.addEventListener("click", () => {
       dialog.close();
       resolve(true);
     });
 
-    cancelButton.addEventListener('click', () => {
+    cancelButton.addEventListener("click", () => {
       dialog.close();
       resolve(false);
     });
@@ -49,34 +54,34 @@ export const showNoGuideDialog = async (): Promise<boolean> => {
 
   return new Promise<boolean>((resolve) => {
     const okButton = new Button({
-      text: i18n.t('createNewGuide'),
-      type: 'submit'
+      text: i18n.t("createNewGuide"),
+      type: "submit",
     });
     const cancelButton = new Button({
-      text: i18n.t('cancel'),
-      type: 'normal'
+      text: i18n.t("cancel"),
+      type: "normal",
     });
 
-    const footerDiv = document.createElement('div');
+    const footerDiv = document.createElement("div");
     footerDiv.appendChild(okButton);
     footerDiv.appendChild(cancelButton);
 
     const noGuideDialog = new Dialog({
-      title: i18n.t('noGuideTitle'),
-      content: `<div>${i18n.t('noGuideContent')}</div>`,
+      title: i18n.t("noGuideTitle"),
+      content: `<div>${i18n.t("noGuideContent")}</div>`,
       footer: footerDiv,
-      header: `<div>${i18n.t('noGuideFound')}</div>`,
-      icon: 'info',
+      header: `<div>${i18n.t("noGuideFound")}</div>`,
+      icon: "info",
       container: document.body,
-      footerVisible: true
+      footerVisible: true,
     });
 
-    okButton.addEventListener('click', () => {
+    okButton.addEventListener("click", () => {
       noGuideDialog.close();
       resolve(true);
     });
 
-    cancelButton.addEventListener('click', () => {
+    cancelButton.addEventListener("click", () => {
       noGuideDialog.close();
       resolve(false);
     });
@@ -90,34 +95,34 @@ export const showCreateGuideDialog = async (): Promise<boolean> => {
 
   return new Promise<boolean>((resolve) => {
     const okButton = new Button({
-      text: i18n.t('createNewGuide'),
-      type: 'submit'
+      text: i18n.t("createNewGuide"),
+      type: "submit",
     });
     const cancelButton = new Button({
-      text: i18n.t('cancel'),
-      type: 'normal'
+      text: i18n.t("cancel"),
+      type: "normal",
     });
 
-    const footerDiv = document.createElement('div');
+    const footerDiv = document.createElement("div");
     footerDiv.appendChild(okButton);
     footerDiv.appendChild(cancelButton);
 
     const createGuideDialog = new Dialog({
-      title: i18n.t('createNewTourTitle'),
-      content: `<div>${i18n.t('createNewTourContent')}</div>`,
+      title: i18n.t("createNewTourTitle"),
+      content: `<div>${i18n.t("createNewTourContent")}</div>`,
       footer: footerDiv,
-      header: `<div>${i18n.t('createNewTourHeader')}</div>`,
-      icon: 'warning',
+      header: `<div>${i18n.t("createNewTourHeader")}</div>`,
+      icon: "warning",
       container: document.body,
-      footerVisible: true
+      footerVisible: true,
     });
 
-    okButton.addEventListener('click', () => {
+    okButton.addEventListener("click", () => {
       createGuideDialog.close();
       resolve(true);
     });
 
-    cancelButton.addEventListener('click', () => {
+    cancelButton.addEventListener("click", () => {
       createGuideDialog.close();
       resolve(false);
     });
