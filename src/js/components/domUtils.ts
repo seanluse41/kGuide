@@ -93,7 +93,7 @@ const isSearchboxList = (element: Element): boolean => element.classList.contain
 const isDropdownOption = (element: Element): boolean => {
     return element.getAttribute('role') === 'menuitemradio';
 }
-const isRichTextSizeBox = (element: Element): boolean => element.classList.contains('goog-menu') && element.getAttribute('role') === 'listbox';
+const isRichTextSizeBox = (element: Element): boolean => element.classList.contains('goog-menu');
 
 //
 // Element Handlers
