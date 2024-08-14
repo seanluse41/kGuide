@@ -72,5 +72,8 @@
     "supportEmailSubject": "kGuide Plugin Support Request",
     "supportEmailBody": "Seanco,\n\nI'm using the kGuide Plugin version {{version}} and I need assistance with the following issue:\n\n[Please describe your issue here]\n\nThank you for your help.",
     "updateRequestEmailSubject": "kGuide Plugin Update Request",
-    "updateRequestEmailBody": "Hello,\n\nI'm currently using kGuide Plugin version {{currentVersion}} and I've received a notification that an update is available. Please provide me with the latest version.\n\nThank you."
+    "updateRequestEmailBody": "Hello,\n\nI'm currently using kGuide Plugin version {{currentVersion}} and I've received a notification that an update is available. Please provide me with the latest version.\n\nThank you.",
+    "createRepositoryConfirmTitle": "Create Repository App",
+    "createRepositoryConfirmContent": "This will create a new Kintone App named \"kGuide Repository\". In general, one repository is sufficient for one domain, and should usually be created on first plugin install only. The previous repository App will not be deleted. Do you want to continue?",
+    "confirmationRequired": "Create a new kGuide Repository App?"
 }

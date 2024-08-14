@@ -95,7 +95,16 @@ const translateConfigHtml = async () => {
   });
 
   createRepositoryButton?.addEventListener("click", async () => {
-    const appCreateResponse = await createRepositoryApp();
+    const shouldCreate = await showConfigDialog(
+      i18n.t("createRepositoryConfirmTitle"),
+      i18n.t("createRepositoryConfirmContent"),
+      i18n.t("confirmationRequired"),
+      "info"
+    );
+
+    if (shouldCreate) {
+      const appCreateResponse = await createRepositoryApp();
+    }
   });
 
   updateCheckerButton?.addEventListener("click", async () => {
@@ -122,8 +131,8 @@ const translateConfigHtml = async () => {
     try {
       // Step 1: Create the app
       const createAppBody = {
-        name: "kGuide Repository",
-        description: "kGuide Repository for Guide Steps",
+        name: i18n.t("guideRepositoryName"),
+        description: i18n.t("guideRepositoryDescription"),
       };
 
       const createAppResponse = await kintone.api(
