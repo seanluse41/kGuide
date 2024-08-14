@@ -9,7 +9,7 @@ import { SideMenu } from './SideMenu';
 import { getGuideSteps } from './GuideSteps';
 import { setupI18n } from '../i18n';
 import { validateLicenseKey } from './components/licenseUtils';
-import { initObservers, openAllFieldGroups, addEscapeKeyListener, removeEscapeKeyListener, addListboxKeydownListener, removeListboxKeydownListener, resetRichTextSizeBoxState } from './components/domUtils';
+import { initObservers, openAllFieldGroups, addEscapeKeyListener, removeEscapeKeyListener, addListboxKeydownListener, removeListboxKeydownListener, resetRichTextSizeBoxState, resetDatePickerState } from './components/domUtils';
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 
@@ -106,6 +106,7 @@ kintone.events.on("app.record.create.show", async () => {
         removeEscapeKeyListener();
         removeListboxKeydownListener();
         resetRichTextSizeBoxState();
+        resetDatePickerState()
       },
       onPopoverRender: (popover, { config, state }) => {
         if ((state?.activeIndex ?? 0) < steps.length - 1) {

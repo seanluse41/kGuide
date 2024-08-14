@@ -10,7 +10,12 @@ let originalDropdownParent: HTMLElement | null = null;
 let originalDropdownStyle: string = '';
 let originalParentWidth: string = '';
 let isDropdownMoved: boolean = false;
-
+let isDatePickerOpen = false;
+let isYearPickerOpen = false;
+let isMonthPickerOpen = false;
+let datePickerElement: HTMLElement | null = null;
+let yearPickerElement: HTMLElement | null = null;
+let monthPickerElement: HTMLElement | null = null;
 //
 // Driver.js Initialization and Observers
 //
@@ -72,15 +77,21 @@ function handleChildListMutation(mutation: MutationRecord) {
 
 function handleAttributeMutation(mutation: MutationRecord) {
     const target = mutation.target;
-    if (target instanceof Element) {
+    if (target instanceof HTMLElement) {
         if (isDropdown(target) && mutation.attributeName === 'style') {
-            handleDropdownStyleChange(target as HTMLElement);
+            handleDropdownStyleChange(target);
         } else if (isSearchboxList(target) && mutation.attributeName === 'style') {
-            handleSearchboxListStyleChange(target as HTMLElement);
+            handleSearchboxListStyleChange(target);
         } else if (isDropdownOption(target) && mutation.attributeName === 'aria-checked') {
-            handleDropdownOptionSelection(target as HTMLElement);
+            handleDropdownOptionSelection(target);
         } else if (isRichTextSizeBox(target) && mutation.attributeName === 'style') {
-            handleRichTextSizeBoxStyleChange(target as HTMLElement);
+            handleRichTextSizeBoxStyleChange(target);
+        } else if (isDatePicker(target) && mutation.attributeName === 'style') {
+            handleDatePickerStyleChange(target);
+        } else if (isYearPicker(target) && mutation.attributeName === 'style') {
+            handleYearPickerStyleChange(target);
+        } else if (isMonthPicker(target) && mutation.attributeName === 'style') {
+            handleMonthPickerStyleChange(target);
         }
     }
 }
@@ -98,8 +109,24 @@ const isDropdownOption = (element: Element): boolean => {
     return element.getAttribute('role') === 'menuitemradio';
 }
 const isRichTextSizeBox = (element: Element): boolean => element.classList.contains('goog-menu');
-const isLookupClearPopup = (element: Element): boolean => 
+const isLookupClearPopup = (element: Element): boolean =>
     element.classList.contains('removelink-popup-cybozu');
+
+const isDatePicker = (element: Element): element is HTMLElement =>
+    element instanceof HTMLElement && element.classList.contains('goog-popupdatepicker');
+
+const isYearPicker = (element: Element): element is HTMLElement =>
+    element instanceof HTMLElement &&
+    element.classList.contains('gaia-argoui-forms-datepicker-selectmenu') &&
+    element.parentElement !== null &&
+    element.parentElement.classList.contains('goog-date-picker-year-container');
+
+const isMonthPicker = (element: Element): element is HTMLElement =>
+    element instanceof HTMLElement &&
+    element.classList.contains('gaia-argoui-forms-datepicker-selectmenu') &&
+    element.parentElement !== null &&
+    element.parentElement.classList.contains('goog-date-picker-month-container');
+
 //
 // Element Handlers
 //
@@ -230,18 +257,16 @@ function handleRichTextSizeBoxStyleChange(listElement: HTMLElement) {
     const currentDisplay = listElement.style.display;
 
     if (currentDisplay !== 'none' && !isRichTextSizeBoxOpen) {
-        console.log("Rich text size box opened");
         isRichTextSizeBoxOpen = true;
         richTextSizeBoxElement = listElement;
         listElement.addEventListener('click', handleRichTextSizeBoxClick);
-        
-        if (driverObj) {          
+
+        if (driverObj) {
             driverObj.highlight({
                 element: listElement,
             });
         }
     } else if (currentDisplay === 'none' && isRichTextSizeBoxOpen) {
-        console.log("Rich text size box closed");
         closeRichTextSizeBox();
     }
 }
@@ -250,7 +275,6 @@ function handleRichTextSizeBoxClick(event: MouseEvent) {
     const clickedOption = (event.target as HTMLElement).closest('[role="menuitem"]');
 
     if (clickedOption) {
-        console.log("Option selected in rich text size box");
         closeRichTextSizeBox();
     }
 }
@@ -271,7 +295,6 @@ export function resetRichTextSizeBoxState() {
 
 
 function handleLookupClearPopupAppearance(popupElement: Element) {
-    console.log("Lookup clear popup appeared");
     if (driverObj && popupElement instanceof HTMLElement) {
         driverObj.highlight({
             element: popupElement
@@ -280,8 +303,134 @@ function handleLookupClearPopupAppearance(popupElement: Element) {
 }
 
 function handleLookupClearPopupDisappearance() {
-    console.log("Lookup clear popup disappeared");
     returnToOriginalStep();
+}
+
+
+function handleDatePickerStyleChange(element: HTMLElement) {
+    const currentDisplay = element.style.display;
+
+    if (currentDisplay !== 'none' && !isDatePickerOpen) {
+        isDatePickerOpen = true;
+        datePickerElement = element;
+        highlightElement(datePickerElement);
+    } else if (currentDisplay === 'none' && isDatePickerOpen) {
+        closeDatePicker();
+    }
+}
+
+function handleYearPickerStyleChange(element: HTMLElement) {
+    const currentDisplay = element.style.display;
+
+    if (currentDisplay !== 'none' && !isYearPickerOpen) {
+        isYearPickerOpen = true;
+        yearPickerElement = element;
+        highlightElement(yearPickerElement);
+        
+        // Add mutation observer for aria-checked changes
+        const yearObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'aria-checked') {
+                    const target = mutation.target as HTMLElement;
+                    if (target.getAttribute('aria-checked') === 'true') {
+                        closeYearPicker();
+                    }
+                }
+            });
+        });
+        yearObserver.observe(element, { 
+            attributes: true, 
+            subtree: true, 
+            attributeFilter: ['aria-checked'] 
+        });
+    } else if (currentDisplay === 'none' && isYearPickerOpen) {
+        closeYearPicker();
+    }
+}
+
+function handleMonthPickerStyleChange(element: HTMLElement) {
+    const currentDisplay = element.style.display;
+
+    if (currentDisplay !== 'none' && !isMonthPickerOpen) {
+        isMonthPickerOpen = true;
+        monthPickerElement = element;
+        highlightElement(monthPickerElement);
+        
+        // Add mutation observer for aria-checked changes
+        const monthObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'aria-checked') {
+                    const target = mutation.target as HTMLElement;
+                    if (target.getAttribute('aria-checked') === 'true') {
+                        closeMonthPicker();
+                    }
+                }
+            });
+        });
+
+        monthObserver.observe(element, { 
+            attributes: true, 
+            subtree: true, 
+            attributeFilter: ['aria-checked'] 
+        });
+    } else if (currentDisplay === 'none' && isMonthPickerOpen) {
+        closeMonthPicker();
+    }
+}
+
+function closeDatePicker() {
+    isDatePickerOpen = false;
+    isYearPickerOpen = false;
+    yearPickerElement = null;
+    isMonthPickerOpen = false;
+    monthPickerElement = null;
+    returnToOriginalStep();
+}
+
+function closeYearPicker() {
+    if (yearPickerElement) {
+        isYearPickerOpen = false;
+        yearPickerElement = null;
+        if (datePickerElement) {
+            highlightElement(datePickerElement);
+        } else {
+            returnToOriginalStep();
+        }
+    } else {
+        console.error("Year picker element not found when trying to close");
+    }
+}
+
+function closeMonthPicker() {
+    if (monthPickerElement) {
+        isMonthPickerOpen = false;
+        monthPickerElement = null;
+        if (datePickerElement) {
+            highlightElement(datePickerElement);
+        } else {
+            returnToOriginalStep();
+        }
+    } else {
+        console.error("Month picker element not found when trying to close");
+    }
+}
+
+
+function highlightElement(element: HTMLElement) {
+    if (driverObj) {
+        driverObj.highlight({
+            element: element
+        });
+    }
+}
+
+// Update the resetDatePickerState function
+export function resetDatePickerState() {
+    isDatePickerOpen = false;
+    isYearPickerOpen = false;
+    isMonthPickerOpen = false;
+    yearPickerElement = null;
+    monthPickerElement = null;
 }
 
 //
@@ -291,8 +440,12 @@ function handleLookupClearPopupDisappearance() {
 function returnToOriginalStep() {
     if (driverObj) {
         const currentHighlightedElement = document.querySelector('.driver-highlighted-element');
-        if (currentHighlightedElement instanceof HTMLElement && isSearchboxList(currentHighlightedElement)) {
-            currentHighlightedElement.style.position = originalListboxPosition || '';
+        if (currentHighlightedElement instanceof HTMLElement) {
+            if (isSearchboxList(currentHighlightedElement)) {
+                currentHighlightedElement.style.position = originalListboxPosition || '';
+            } else if (isDatePicker(currentHighlightedElement)) {
+                closeDatePicker();
+            }
         }
         const currentStep = driverObj.getActiveIndex();
         if (currentStep !== null && currentStep !== undefined) {
@@ -345,6 +498,8 @@ export function addEscapeKeyListener(callback: () => void) {
         if (event.key === 'Escape') {
             if (isRichTextSizeBoxOpen) {
                 closeRichTextSizeBox();
+            } else if (isDatePickerOpen) {
+                closeDatePicker();
             } else {
                 callback();
                 removeEscapeKeyListener();
