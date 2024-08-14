@@ -272,12 +272,16 @@ export function resetRichTextSizeBoxState() {
 
 function handleLookupClearPopupAppearance(popupElement: Element) {
     console.log("Lookup clear popup appeared");
-    // TODO: Implement the logic to handle the popup appearance
+    if (driverObj && popupElement instanceof HTMLElement) {
+        driverObj.highlight({
+            element: popupElement
+        });
+    }
 }
 
 function handleLookupClearPopupDisappearance() {
     console.log("Lookup clear popup disappeared");
-    // TODO: Implement the logic to handle the popup disappearance
+    returnToOriginalStep();
 }
 
 //
