@@ -93,12 +93,12 @@ kintone.events.on("app.record.create.show", async () => {
           resizeObserver.observe(element);
         }
       },
-      onDeselected: (element) => {
+      onDeselected: () => {
         if (resizeObserver) {
           resizeObserver.disconnect();
         }
       },
-      onDestroyed: (element) => {
+      onDestroyed: () => {
         if (resizeObserver) {
           resizeObserver.disconnect();
         }

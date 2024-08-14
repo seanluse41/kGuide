@@ -4,8 +4,6 @@ import { ElementPicker } from "pick-dom-element";
 export class CustomElementPicker {
   private picker: any; // Replace 'any' with the actual type from the ElementPicker library
   private currentHighlightedElement: HTMLElement | null = null;
-  private style = { borderColor: "#0000ff" };
-
   constructor(options: ElementPickerOptions) {
     this.picker = new ElementPicker(options);
   }
@@ -15,7 +13,7 @@ export class CustomElementPicker {
       this.currentHighlightedElement.style.outline = '';
     }
     if (el) {
-      el.style.outline = `2px solid ${this.style.borderColor}`;
+      el.style.outline = `2px solid #3498db`;
       this.currentHighlightedElement = el;
     } else {
       this.currentHighlightedElement = null;
