@@ -59,5 +59,7 @@
     "progressText": "{{current}} / {{total}}",
     "next": "次",
     "previous": "前",
-    "finish": "終了"
+    "finish": "終了",
+    "checkForUpdates": "更新する",
+    "allowNonAdminGuideCreation": "アプリ管理者以外のユーザーにkGuide作成を許可する"
 }

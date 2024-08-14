@@ -1,26 +1,41 @@
-<section class="settings">
+<div class="settings">
   <h2 class="settings-heading">{{settingsForKGuide}}</h2>
+
   <p class="kintoneplugin-desc">{{pleaseInputAppId}}</p>
   <p class="kintoneplugin-desc">{{ifRepositoryNotExist}}</p>
+
   <form class="js-submit-settings">
-    <p class="kintoneplugin-row">
+    <div class="kintoneplugin-row">
       <label for="message">
-        {{repositoryAppId}}:
-        <input type="text" placeholder="1" id="repository-appid" class="js-text-message kintoneplugin-input-text">
+        {{repositoryAppId}}
+        <input type="text" class="kintoneplugin-input-text" id="repository-appid" name="message">
       </label>
-    </p>
-    <p class="kintoneplugin-row">
+    </div>
+
+    <div class="kintoneplugin-row">
       <label for="secretKey">
-        {{secretKey}}:
-        <input type="text" placeholder="abcd-1234-efgh-5678" id="secretKey" class="js-text-secretKey kintoneplugin-input-text">
+        {{secretKey}}
+        <input type="text" class="kintoneplugin-input-text" id="secretKey" name="secretKey">
       </label>
-    </p>
-    <p class="kintoneplugin-row">
-      <button type="button" id="create-repository-button" class="kintoneplugin-button-dialog-ok">{{createRepositoryApp}}</button>
-    </p>
-    <p class="kintoneplugin-row">
-        <button type="button" class="js-cancel-button kintoneplugin-button-dialog-cancel">{{cancel}}</button>
-        <button type="submit" class="kintoneplugin-button-dialog-ok">{{save}}</button>
-    </p>
+    </div>
+
+    <div class="kintoneplugin-row">
+      <div class="kintoneplugin-input-checkbox">
+        <span class="kintoneplugin-input-checkbox-item">
+          <input type="checkbox" id="nonAdminGuideCreation" name="nonAdminGuideCreation">
+          <label for="nonAdminGuideCreation">{{allowNonAdminGuideCreation}}</label>
+        </span>
+      </div>
+    </div>
+
+    <div class="kintoneplugin-row">
+      <button type="button" class="kintoneplugin-button-dialog-ok" id="create-repository-button">{{createRepositoryApp}}</button>
+      <button type="button" class="kintoneplugin-button-dialog-ok" id="update-checker-button">{{checkForUpdates}}</button>
+    </div>
+
+    <div class="kintoneplugin-row">
+      <button type="button" class="kintoneplugin-button-dialog-cancel js-cancel-button">{{cancel}}</button>
+      <button type="submit" class="kintoneplugin-button-dialog-ok">{{save}}</button>
+    </div>
   </form>
-</section>
+</div>

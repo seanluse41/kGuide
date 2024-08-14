@@ -59,5 +59,7 @@
     "progressText": "{{current}} of {{total}}",
     "next": "Next",
     "previous": "Previous",
-    "finish": "Finish"
+    "finish": "Finish",
+    "checkForUpdates": "Check for Updates",
+    "allowNonAdminGuideCreation": "Allow non-admins to create guides"
 }

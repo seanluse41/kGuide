@@ -15,16 +15,18 @@ const translateConfigHtml = async () => {
     ifRepositoryNotExist: document.querySelectorAll(".kintoneplugin-desc")[1],
     repositoryAppId: document.querySelector('label[for="message"]'),
     secretKey: document.querySelector('label[for="secretKey"]'),
+    allowNonAdminGuideCreation: document.querySelector('label[for="nonAdminGuideCreation"]'),
     createRepositoryApp: document.getElementById("create-repository-button"),
+    checkForUpdates: document.getElementById("update-checker-button"),
     cancel: document.querySelector(".js-cancel-button"),
     save: document.querySelector(
-      ".kintoneplugin-button-dialog-ok:not(#create-repository-button)",
+      ".kintoneplugin-button-dialog-ok:not(#create-repository-button):not(#update-checker-button)",
     ),
   };
 
   for (const [key, element] of Object.entries(elements)) {
     if (element) {
-      if (key === "repositoryAppId" || key === "secretKey") {
+      if (key === "repositoryAppId" || key === "secretKey" || key === "allowNonAdminGuideCreation") {
         const labelText = element.childNodes[0];
         if (labelText.nodeType === Node.TEXT_NODE) {
           labelText.textContent = i18n.t(key);
@@ -45,11 +47,13 @@ const translateConfigHtml = async () => {
   const createRepositoryButton = document.getElementById(
     "create-repository-button",
   );
+  const updateCheckerButton = document.getElementById("update-checker-button");
   const messageInput =
     document.querySelector<HTMLInputElement>("#repository-appid");
   const secretKeyInput = document.querySelector<HTMLInputElement>("#secretKey");
+  const nonAdminGuideCreationCheckbox = document.querySelector<HTMLInputElement>("#nonAdminGuideCreation");
 
-  if (!(form && cancelButton && messageInput && secretKeyInput)) {
+  if (!(form && cancelButton && messageInput && secretKeyInput && nonAdminGuideCreationCheckbox)) {
     throw new Error(i18n.t("requiredElementsNotFound"));
   }
 
@@ -61,11 +65,18 @@ const translateConfigHtml = async () => {
   if (config.secretKey) {
     secretKeyInput.value = config.secretKey;
   }
+  if (config.nonAdminGuideCreation) {
+    nonAdminGuideCreationCheckbox.checked = config.nonAdminGuideCreation === "true";
+  }
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     kintone.plugin.app.setConfig(
-      { message: messageInput.value, secretKey: secretKeyInput.value },
+      {
+        message: messageInput.value,
+        secretKey: secretKeyInput.value,
+        nonAdminGuideCreation: nonAdminGuideCreationCheckbox.checked.toString()
+      },
       () => {
         alert(i18n.t("pluginSettingsSaved"));
         window.location.href = "../../flow?app=" + kintone.app.getId();
@@ -79,6 +90,11 @@ const translateConfigHtml = async () => {
 
   createRepositoryButton?.addEventListener("click", async () => {
     const appCreateResponse = await createRepositoryApp();
+  });
+
+  updateCheckerButton?.addEventListener("click", () => {
+    console.log("Update checker button clicked");
+    // Add your update checking logic here
   });
 
   async function createRepositoryApp() {

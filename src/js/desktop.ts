@@ -209,7 +209,7 @@ kintone.events.on("app.record.create.show", async () => {
   }
 
   header.appendChild(guideButton);
-  if (permissions.editApp === true) {
+  if (pluginConfig.nonAdminGuideCreation || permissions.editApp === true) {
     header.appendChild(createButton);
   }
 });
