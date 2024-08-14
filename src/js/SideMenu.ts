@@ -128,8 +128,8 @@ export class SideMenu {
       listItem.classList.add("selected-element-item");
       listItem.innerHTML = `
         <div>${index + 1}. ${item.label} (${item.fieldClass})</div>
-        <input type="text" class="title-input" placeholder="${t("enterTitle")}" value="${item.title}" data-index="${index}">
-        <textarea class="description-input" placeholder="${t("enterDescription")}" data-index="${index}">${item.description}</textarea>
+        <input maxlength="25" type="text" class="title-input" placeholder="${t("enterTitle")}" value="${item.title}" data-index="${index}">
+        <textarea maxlength="550"class="description-input" placeholder="${t("enterDescription")}" data-index="${index}">${item.description}</textarea>
         <div id="dropdown-container-${index}" style="margin: 10px 0;"></div>
         <button class="remove-element" data-index="${index}">${t("remove")}</button>
       `;
