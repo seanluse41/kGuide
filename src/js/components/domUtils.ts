@@ -51,6 +51,8 @@ function handleChildListMutation(mutation: MutationRecord) {
                 handleModalAppearance(node);
             } else if (isSearchboxList(node)) {
                 handleSearchboxListAppearance(node);
+            } else if (isLookupClearPopup(node)) {
+                handleLookupClearPopupAppearance(node);
             }
         }
     });
@@ -61,6 +63,8 @@ function handleChildListMutation(mutation: MutationRecord) {
                 handleModalDisappearance();
             } else if (isSearchboxList(node)) {
                 handleSearchboxListDisappearance();
+            } else if (isLookupClearPopup(node)) {
+                handleLookupClearPopupDisappearance();
             }
         }
     });
@@ -94,7 +98,8 @@ const isDropdownOption = (element: Element): boolean => {
     return element.getAttribute('role') === 'menuitemradio';
 }
 const isRichTextSizeBox = (element: Element): boolean => element.classList.contains('goog-menu');
-
+const isLookupClearPopup = (element: Element): boolean => 
+    element.classList.contains('removelink-popup-cybozu');
 //
 // Element Handlers
 //
@@ -259,10 +264,20 @@ function closeRichTextSizeBox() {
     returnToOriginalStep();
 }
 
-// Add this function to reset the rich text size box state when the tour ends
 export function resetRichTextSizeBoxState() {
     isRichTextSizeBoxOpen = false;
     richTextSizeBoxElement = null;
+}
+
+
+function handleLookupClearPopupAppearance(popupElement: Element) {
+    console.log("Lookup clear popup appeared");
+    // TODO: Implement the logic to handle the popup appearance
+}
+
+function handleLookupClearPopupDisappearance() {
+    console.log("Lookup clear popup disappeared");
+    // TODO: Implement the logic to handle the popup disappearance
 }
 
 //
