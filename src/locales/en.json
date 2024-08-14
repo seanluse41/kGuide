@@ -61,5 +61,13 @@
     "previous": "Previous",
     "finish": "Finish",
     "checkForUpdates": "Check for Updates",
-    "allowNonAdminGuideCreation": "Allow non-admins to create guides"
+    "allowNonAdminGuideCreation": "Allow non-admins to create guides",
+    "alreadyUpToDate": "Your plugin is already up to date.",
+    "updateAvailableTitle": "Update Available",
+    "updateAvailableMessage": "A new version of the plugin is available. Would you like to update?",
+    "updateAvailable": "Update Available",
+    "errorCheckingForUpdates": "An error occurred while checking for updates. Please try again later.",
+    "contactSupport": "Contact Support",
+    "supportEmailSubject": "kGuide Plugin Support Request",
+    "supportEmailBody": "Seanco,\n\nI'm using the kGuide Plugin version {{version}} and I need assistance with the following issue:\n\n[Please describe your issue here]\n\nThank you for your help!"
 }

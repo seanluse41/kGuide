@@ -3,8 +3,10 @@
 import { setupI18n } from "../i18n";
 import { showErrorNotification } from "./components/notificationUtils";
 import { showConfigDialog } from "./components/dialogUtils";
+import { checkForUpdates } from "./components/updateUtils";
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
+const CURRENT_VERSION = '1.0.0'; // Replace with your actual current version
 
 const translateConfigHtml = async () => {
   const i18n = await setupI18n();
@@ -18,9 +20,10 @@ const translateConfigHtml = async () => {
     allowNonAdminGuideCreation: document.querySelector('label[for="nonAdminGuideCreation"]'),
     createRepositoryApp: document.getElementById("create-repository-button"),
     checkForUpdates: document.getElementById("update-checker-button"),
+    contactSupport: document.getElementById("contact-support-button"),
     cancel: document.querySelector(".js-cancel-button"),
     save: document.querySelector(
-      ".kintoneplugin-button-dialog-ok:not(#create-repository-button):not(#update-checker-button)",
+      ".kintoneplugin-button-dialog-ok:not(#create-repository-button):not(#update-checker-button):not(#contact-support-button)",
     ),
   };
 
@@ -48,6 +51,7 @@ const translateConfigHtml = async () => {
     "create-repository-button",
   );
   const updateCheckerButton = document.getElementById("update-checker-button");
+  const contactSupportButton = document.getElementById("contact-support-button");
   const messageInput =
     document.querySelector<HTMLInputElement>("#repository-appid");
   const secretKeyInput = document.querySelector<HTMLInputElement>("#secretKey");
@@ -56,6 +60,7 @@ const translateConfigHtml = async () => {
   if (!(form && cancelButton && messageInput && secretKeyInput && nonAdminGuideCreationCheckbox)) {
     throw new Error(i18n.t("requiredElementsNotFound"));
   }
+
 
   const config = kintone.plugin.app.getConfig(PLUGIN_ID);
 
@@ -92,9 +97,18 @@ const translateConfigHtml = async () => {
     const appCreateResponse = await createRepositoryApp();
   });
 
-  updateCheckerButton?.addEventListener("click", () => {
-    console.log("Update checker button clicked");
-    // Add your update checking logic here
+  updateCheckerButton?.addEventListener("click", async () => {
+    try {
+      await checkForUpdates();
+    } catch (error) {
+      showErrorNotification(i18n.t("errorCheckingForUpdates"));
+    }
+  });
+
+  contactSupportButton?.addEventListener("click", () => {
+    const subject = encodeURIComponent(i18n.t("supportEmailSubject"));
+    const body = encodeURIComponent(i18n.t("supportEmailBody", { version: CURRENT_VERSION }));
+    window.location.href = `mailto:seanluse41@gmail.com?subject=${subject}&body=${body}`;
   });
 
   async function createRepositoryApp() {
