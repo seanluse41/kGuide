@@ -51,8 +51,6 @@ function handleChildListMutation(mutation: MutationRecord) {
                 handleModalAppearance(node);
             } else if (isSearchboxList(node)) {
                 handleSearchboxListAppearance(node);
-            } else if (isRichTextSizeBox(node)) {
-                handleRichTextSizeBoxAppearance(node)
             }
         }
     });
@@ -220,17 +218,51 @@ function revertDropdownChanges(dropdownElement: HTMLElement) {
     }
 }
 
-function handleRichTextSizeBoxAppearance(listElement: Element) {
-    if (driverObj && listElement instanceof HTMLElement) {
-        // Do Stuff.
-        console.log("rich text box opened")
-        // returnToOriginalStep()
+let isRichTextSizeBoxOpen = false;
+let richTextSizeBoxElement: HTMLElement | null = null;
+
+function handleRichTextSizeBoxStyleChange(listElement: HTMLElement) {
+    const currentDisplay = listElement.style.display;
+
+    if (currentDisplay !== 'none' && !isRichTextSizeBoxOpen) {
+        console.log("Rich text size box opened");
+        isRichTextSizeBoxOpen = true;
+        richTextSizeBoxElement = listElement;
+        listElement.addEventListener('click', handleRichTextSizeBoxClick);
+        
+        if (driverObj) {          
+            driverObj.highlight({
+                element: listElement,
+            });
+        }
+    } else if (currentDisplay === 'none' && isRichTextSizeBoxOpen) {
+        console.log("Rich text size box closed");
+        closeRichTextSizeBox();
     }
 }
 
-function handleRichTextSizeBoxStyleChange(listElement : Element) {
-    console.log("rich text box display none")
-    // returnToOriginalStep();
+function handleRichTextSizeBoxClick(event: MouseEvent) {
+    const clickedOption = (event.target as HTMLElement).closest('[role="menuitem"]');
+
+    if (clickedOption) {
+        console.log("Option selected in rich text size box");
+        closeRichTextSizeBox();
+    }
+}
+
+function closeRichTextSizeBox() {
+    isRichTextSizeBoxOpen = false;
+    if (richTextSizeBoxElement) {
+        richTextSizeBoxElement.removeEventListener('click', handleRichTextSizeBoxClick);
+        richTextSizeBoxElement = null;
+    }
+    returnToOriginalStep();
+}
+
+// Add this function to reset the rich text size box state when the tour ends
+export function resetRichTextSizeBoxState() {
+    isRichTextSizeBoxOpen = false;
+    richTextSizeBoxElement = null;
 }
 
 //
@@ -292,8 +324,12 @@ export async function openAllFieldGroups() {
 export function addEscapeKeyListener(callback: () => void) {
     escapeKeyListener = (event: KeyboardEvent) => {
         if (event.key === 'Escape') {
-            callback();
-            removeEscapeKeyListener();
+            if (isRichTextSizeBoxOpen) {
+                closeRichTextSizeBox();
+            } else {
+                callback();
+                removeEscapeKeyListener();
+            }
         }
     };
     document.addEventListener('keydown', escapeKeyListener);
