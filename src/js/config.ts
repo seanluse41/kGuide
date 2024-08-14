@@ -4,6 +4,7 @@ import { setupI18n } from "../i18n";
 import { showErrorNotification } from "./components/notificationUtils";
 import { showConfigDialog } from "./components/dialogUtils";
 import { checkForUpdates } from "./components/updateUtils";
+import { getPluginVersion } from "./components/versionUtils";
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 const CURRENT_VERSION = '1.0.0'; // Replace with your actual current version
@@ -99,16 +100,22 @@ const translateConfigHtml = async () => {
 
   updateCheckerButton?.addEventListener("click", async () => {
     try {
-      await checkForUpdates();
+      const currentVersion = await getPluginVersion();
+      checkForUpdates(currentVersion);
     } catch (error) {
-      showErrorNotification(i18n.t("errorCheckingForUpdates"));
+      showErrorNotification(i18n.t("errorFetchingPluginVersion"));
     }
   });
 
-  contactSupportButton?.addEventListener("click", () => {
-    const subject = encodeURIComponent(i18n.t("supportEmailSubject"));
-    const body = encodeURIComponent(i18n.t("supportEmailBody", { version: CURRENT_VERSION }));
-    window.location.href = `mailto:seanluse41@gmail.com?subject=${subject}&body=${body}`;
+  contactSupportButton?.addEventListener("click", async () => {
+    try {
+      const currentVersion = await getPluginVersion();
+      const subject = encodeURIComponent(i18n.t("supportEmailSubject"));
+      const body = encodeURIComponent(i18n.t("supportEmailBody", { version: currentVersion }));
+      window.location.href = `mailto:seanluse41@gmail.com?subject=${subject}&body=${body}`;
+    } catch (error) {
+      showErrorNotification(i18n.t("errorFetchingPluginVersion"));
+    }
   });
 
   async function createRepositoryApp() {

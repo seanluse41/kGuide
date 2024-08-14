@@ -5,12 +5,11 @@ import { showConfigDialog } from "./dialogUtils";
 import { setupI18n } from "../../i18n";
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
-const CURRENT_VERSION = '1.0'; // Replace with your actual current version
 
-export async function checkForUpdates() {
+export async function checkForUpdates(currentVersion: string) {
   const i18n = await setupI18n();
   const baseUrl = "https://www.seanbase.com/getKguideUpdate";
-  const url = `${baseUrl}?version=${encodeURIComponent(CURRENT_VERSION)}`;
+  const url = `${baseUrl}?version=${encodeURIComponent(currentVersion)}`;
   const method = "GET";
   const headers = {
     "Content-Type": "application/json",
@@ -29,16 +28,15 @@ export async function checkForUpdates() {
     // if (!response || response[1] !== 200) {
     //   throw new Error(`Request failed with status ${response ? response[1] : 'unknown'}`);
     // }
-
     // const responseData = JSON.parse(response[0]);
+
     let responseData = {
-        current: false
+      current: true
     }
 
     if (responseData.current === true) {
       showSuccessNotification(i18n.t("alreadyUpToDate"));
     } else {
-      // Assuming the response is a ZIP file if not current
       const shouldUpdate = await showConfigDialog(
         i18n.t("updateAvailableTitle"),
         i18n.t("updateAvailableMessage"),
@@ -47,8 +45,9 @@ export async function checkForUpdates() {
       );
 
       if (shouldUpdate) {
-        console.log("User agreed to update. Implement update installation here.");
-        // TODO: Implement the update installation process
+        const subject = encodeURIComponent(i18n.t("updateRequestEmailSubject"));
+        const body = encodeURIComponent(i18n.t("updateRequestEmailBody", { currentVersion }));
+        window.location.href = `mailto:seanluse41@gmail.com?subject=${subject}&body=${body}`;
       }
     }
   } catch (error) {

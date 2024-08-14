@@ -67,7 +67,10 @@
     "updateAvailableMessage": "A new version of the plugin is available. Would you like to update?",
     "updateAvailable": "Update Available",
     "errorCheckingForUpdates": "An error occurred while checking for updates. Please try again later.",
+    "errorFetchingPluginVersion": "Error fetching plugin version. Please try again later.",
     "contactSupport": "Contact Support",
     "supportEmailSubject": "kGuide Plugin Support Request",
-    "supportEmailBody": "Seanco,\n\nI'm using the kGuide Plugin version {{version}} and I need assistance with the following issue:\n\n[Please describe your issue here]\n\nThank you for your help!"
+    "supportEmailBody": "Seanco,\n\nI'm using the kGuide Plugin version {{version}} and I need assistance with the following issue:\n\n[Please describe your issue here]\n\nThank you for your help.",
+    "updateRequestEmailSubject": "kGuide Plugin Update Request",
+    "updateRequestEmailBody": "Hello,\n\nI'm currently using kGuide Plugin version {{currentVersion}} and I've received a notification that an update is available. Please provide me with the latest version.\n\nThank you."
 }
