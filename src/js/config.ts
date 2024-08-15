@@ -51,7 +51,7 @@ const translateConfigHtml = async () => {
   const createRepositoryButton = document.getElementById(
     "create-repository-button",
   );
-  const updateCheckerButton = document.getElementById("update-checker-button");
+  //const updateCheckerButton = document.getElementById("update-checker-button");
   const contactSupportButton = document.getElementById("contact-support-button");
   const messageInput =
     document.querySelector<HTMLInputElement>("#repository-appid");
@@ -107,14 +107,14 @@ const translateConfigHtml = async () => {
     }
   });
 
-  updateCheckerButton?.addEventListener("click", async () => {
-    try {
-      const currentVersion = await getPluginVersion();
-      checkForUpdates(currentVersion);
-    } catch (error) {
-      showErrorNotification(i18n.t("errorFetchingPluginVersion"));
-    }
-  });
+  // updateCheckerButton?.addEventListener("click", async () => {
+  //   try {
+  //     const currentVersion = await getPluginVersion();
+  //     checkForUpdates(currentVersion);
+  //   } catch (error) {
+  //     showErrorNotification(i18n.t("errorFetchingPluginVersion"));
+  //   }
+  // });
 
   contactSupportButton?.addEventListener("click", async () => {
     try {
