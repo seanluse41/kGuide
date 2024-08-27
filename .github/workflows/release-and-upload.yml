@@ -33,25 +33,40 @@ jobs:
     - name: Get latest release version and increment
       id: get_version
       run: |
-        latest_version=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name | sed 's/v//')
-        if [ -z "$latest_version" ]; then
+        # Fetch all releases
+        releases=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases")
+        
+        # Check if there are any releases
+        if [ "$(echo $releases | jq '. | length')" -eq "0" ]; then
+          echo "No releases found. Starting with version 1.0"
           new_version="1.0"
         else
-          major=$(echo $latest_version | cut -d. -f1)
-          minor=$(echo $latest_version | cut -d. -f2)
-          new_minor=$((minor + 1))
-          new_version="$major.$new_minor"
+          # Get the latest release version
+          latest_version=$(echo $releases | jq -r '.[0].tag_name' | sed 's/v//')
+          echo "Latest version: $latest_version"
+          
+          # Increment the version
+          if [[ $latest_version =~ ^[0-9]+\.[0-9]+$ ]]; then
+            major=$(echo $latest_version | cut -d. -f1)
+            minor=$(echo $latest_version | cut -d. -f2)
+            new_minor=$((minor + 1))
+            new_version="$major.$new_minor"
+          else
+            echo "Invalid version format. Starting with version 1.0"
+            new_version="1.0"
+          fi
         fi
-        echo "new_version=$new_version" >> $GITHUB_OUTPUT
+        
+        echo "New version: $new_version"
+        echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
 
     - name: Create Release
-      id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v${{ steps.get_version.outputs.new_version }}
-        release_name: Release ${{ steps.get_version.outputs.new_version }}
+        tag_name: v${{ env.NEW_VERSION }}
+        release_name: Release ${{ env.NEW_VERSION }}
         draft: false
         prerelease: false
 
