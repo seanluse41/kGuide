@@ -22,7 +22,7 @@ jobs:
     - name: Create private key file
       run: |
         echo "${{ secrets.PRIVATE_KEY_FILE }}" > private.ppk
-        chmod 600 private.ppk  # Set correct permissions for the key file
+        chmod 600 private.ppk
 
     - name: Build production
       run: npm run build:prod
@@ -30,78 +30,83 @@ jobs:
     - name: Remove private key file
       run: rm private.ppk
 
-    - name: Get latest release version and increment
+    - name: Get or create release version
       id: get_version
       run: |
-        # Fetch all releases
         releases=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases")
-        
-        # Debug: Print the raw response
-        echo "Raw API response:"
-        echo "$releases"
-        
-        # Check if the response is an array
-        if jq -e '. | arrays' >/dev/null 2>&1 <<<"$releases"; then
-          # It's an array, proceed as before
-          if [ "$(echo $releases | jq '. | length')" -eq "0" ]; then
-            echo "No releases found. Starting with version 1.1"
-            new_version="1.1"
-          else
-            # Get the latest release version
-            latest_version=$(echo $releases | jq -r '.[0].tag_name' | sed 's/v//')
-            echo "Latest version: $latest_version"
-            
-            # Increment the version
-            if [[ $latest_version =~ ^[0-9]+\.[0-9]+$ ]]; then
-              major=$(echo $latest_version | cut -d. -f1)
-              minor=$(echo $latest_version | cut -d. -f2)
-              new_minor=$((minor + 1))
-              new_version="$major.$new_minor"
-            else
-              echo "Invalid version format. Starting with version 1.1"
-              new_version="1.1"
-            fi
-          fi
+        if [ "$(echo $releases | jq -r '.message')" = "Not Found" ]; then
+          echo "No releases found. Starting with version 1.0"
+          new_version="1.0"
         else
-          # It's not an array, check if it's an error message
-          error_message=$(echo $releases | jq -r '.message')
-          echo "Error fetching releases: $error_message"
-          echo "Starting with version 1.1"
-          new_version="1.1"
+          latest_version=$(echo $releases | jq -r '.[0].tag_name' | sed 's/v//')
+          if [[ $latest_version =~ ^[0-9]+\.[0-9]+$ ]]; then
+            major=$(echo $latest_version | cut -d. -f1)
+            minor=$(echo $latest_version | cut -d. -f2)
+            new_minor=$((minor + 1))
+            new_version="$major.$new_minor"
+          else
+            echo "Invalid version format. Starting with version 1.0"
+            new_version="1.0"
+          fi
         fi
-        
-        echo "New version: $new_version"
         echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
 
     - name: Create Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v${{ env.NEW_VERSION }}
-        release_name: Release ${{ env.NEW_VERSION }}
-        draft: false
-        prerelease: false
+      run: |
+        response=$(curl -s -o /dev/null -w "%{http_code}" \
+          -X POST \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }}/releases \
+          -d '{
+            "tag_name": "v${{ env.NEW_VERSION }}",
+            "name": "Release ${{ env.NEW_VERSION }}",
+            "draft": false,
+            "prerelease": false
+          }')
+        
+        if [ "$response" = "201" ]; then
+          echo "Release v${{ env.NEW_VERSION }} created successfully"
+        elif [ "$response" = "422" ]; then
+          echo "Release v${{ env.NEW_VERSION }} already exists. Incrementing version."
+          NEW_VERSION=$(echo ${{ env.NEW_VERSION }} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          
+          # Try to create the release with the incremented version
+          curl -s -o /dev/null -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/releases \
+            -d '{
+              "tag_name": "v'"$NEW_VERSION"'",
+              "name": "Release '"$NEW_VERSION"'",
+              "draft": false,
+              "prerelease": false
+            }'
+          echo "Created release v$NEW_VERSION"
+        else
+          echo "Failed to create release. HTTP status: $response"
+          exit 1
+        fi
 
     - name: Upload to Kintone
       env:
         KINTONE_BASE_URL: ${{ secrets.KINTONE_BASE_URL }}
         KINTONE_API_TOKEN: ${{ secrets.KINTONE_API_TOKEN }}
       run: |
-        # Upload file to Kintone
         file_key=$(curl -X POST \
           -H "X-Cybozu-API-Token: $KINTONE_API_TOKEN" \
           -F "file=@dist/plugin.zip" \
           "$KINTONE_BASE_URL/k/v1/file.json" | jq -r .fileKey)
 
-        # Create new record in Kintone
         curl -X POST \
           -H "X-Cybozu-API-Token: $KINTONE_API_TOKEN" \
           -H "Content-Type: application/json" \
           -d '{
             "app": 147,
             "record": {
-              "versionNumber": {"value": "'"${{ steps.get_version.outputs.new_version }}"'"},
+              "versionNumber": {"value": "'"${{ env.NEW_VERSION }}"'"},
               "build": {"value": [{"fileKey": "'"$file_key"'"}]},
               "breaking": {"value": "No"}
             }
