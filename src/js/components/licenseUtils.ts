@@ -78,7 +78,7 @@ export async function validateLicenseKey(secretKey: string): Promise<boolean> {
     return true;
   }
 
-  const baseUrl = "https://www.seanbase.com/validateLicense";
+  const baseUrl = "https://www.seanbase.com/api/validateLicense";
   const url = `${baseUrl}?secretKey=${encodeURIComponent(secretKey)}`;
   const method = "GET";
   const headers = {
