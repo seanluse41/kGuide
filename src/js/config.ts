@@ -26,11 +26,13 @@ const translateConfigHtml = async () => {
 
   for (const [key, element] of Object.entries(elements)) {
     if (element) {
-      if (key === "repositoryAppId" || key === "secretKey" || key === "allowNonAdminGuideCreation") {
+      if (key === "repositoryAppId" || key === "secretKey") {
         const labelText = element.childNodes[0];
         if (labelText.nodeType === Node.TEXT_NODE) {
           labelText.textContent = i18n.t(key);
         }
+      } else if (key === "allowNonAdminGuideCreation") {
+        element.childNodes[1].textContent = i18n.t(key);
       } else {
         element.textContent = i18n.t(key);
       }

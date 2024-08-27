@@ -61,7 +61,7 @@
     "previous": "前",
     "finish": "終了",
     "checkForUpdates": "プラグインを更新する",
-    "allowNonAdminGuideCreation": "アプリ管理者以外のユーザーにkGuide作成を許可する",
+    "allowNonAdminGuideCreation": "管理者以外のユーザーにガイド作成を許可する",
     "alreadyUpToDate": "プラグインは最新版です。",
     "updateAvailableTitle": "更新が利用可能です",
     "updateAvailableMessage": "プラグインのバージョンアップが利用可能です。更新しますか？",
