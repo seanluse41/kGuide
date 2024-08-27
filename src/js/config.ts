@@ -32,7 +32,7 @@ const translateConfigHtml = async () => {
           labelText.textContent = i18n.t(key);
         }
       } else if (key === "allowNonAdminGuideCreation") {
-        element.childNodes[1].textContent = i18n.t(key);
+        element.childNodes[3].textContent = i18n.t(key);
       } else {
         element.textContent = i18n.t(key);
       }
