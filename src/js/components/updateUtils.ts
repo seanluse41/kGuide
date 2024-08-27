@@ -47,7 +47,7 @@ export async function checkForUpdates(currentVersion: string) {
       if (shouldUpdate) {
         const subject = encodeURIComponent(i18n.t("updateRequestEmailSubject"));
         const body = encodeURIComponent(i18n.t("updateRequestEmailBody", { currentVersion }));
-        window.location.href = `mailto:seanluse41@gmail.com?subject=${subject}&body=${body}`;
+        window.location.href = `mailto:admin@seanbase.com?subject=${subject}&body=${body}`;
       }
     }
   } catch (error) {

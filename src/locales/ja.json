@@ -75,5 +75,6 @@
     "updateRequestEmailBody": "Seanco行、\n\n現在kGuideプラグインのバージョン{{currentVersion}}を使用しており、アップデートが利用可能だという通知を受けました。プラグインの最新バージョンを送信するようにお願いします。\nよろしくお願いします。",
     "createRepositoryConfirmTitle": "kGuideリポジトリアプリの作成",
     "createRepositoryConfirmContent": "新しいkintoneアプリ「kGuideリポジトリ」が作成されます。通常、1つのドメインに1つのリポジトリになります。プラグインの初回インストール時にのみ作成する必要があります。古いアプリは残ります。続行しますか？",
-    "confirmationRequired": "作成しますか？"
+    "confirmationRequired": "作成しますか？",
+    "stripeCustomerPortal": "サブスクリプション管理・キャンセル"
 }
