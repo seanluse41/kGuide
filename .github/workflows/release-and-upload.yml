@@ -1,0 +1,73 @@
+name: Release and Upload to Kintone
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 'latest'  # This will use the latest stable Node.js version
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build production
+      run: npm run build:prod
+
+    - name: Get latest release version and increment
+      id: get_version
+      run: |
+        latest_version=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name | sed 's/v//')
+        if [ -z "$latest_version" ]; then
+          new_version="1.0"
+        else
+          major=$(echo $latest_version | cut -d. -f1)
+          minor=$(echo $latest_version | cut -d. -f2)
+          new_minor=$((minor + 1))
+          new_version="$major.$new_minor"
+        fi
+        echo "new_version=$new_version" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.get_version.outputs.new_version }}
+        release_name: Release ${{ steps.get_version.outputs.new_version }}
+        draft: false
+        prerelease: false
+
+    - name: Upload to Kintone
+      env:
+        KINTONE_BASE_URL: ${{ secrets.KINTONE_BASE_URL }}
+        KINTONE_API_TOKEN: ${{ secrets.KINTONE_API_TOKEN }}
+      run: |
+        # Upload file to Kintone
+        file_key=$(curl -X POST \
+          -H "X-Cybozu-API-Token: $KINTONE_API_TOKEN" \
+          -F "file=@dist/plugin.zip" \
+          "$KINTONE_BASE_URL/k/v1/file.json" | jq -r .fileKey)
+
+        # Create new record in Kintone
+        curl -X POST \
+          -H "X-Cybozu-API-Token: $KINTONE_API_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "app": 147,
+            "record": {
+              "versionNumber": {"value": "'"${{ steps.get_version.outputs.new_version }}"'"},
+              "build": {"value": [{"fileKey": "'"$file_key"'"}]},
+              "breaking": {"value": "No"}
+            }
+          }' \
+          "$KINTONE_BASE_URL/k/v1/record.json"
