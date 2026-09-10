@@ -1,7 +1,25 @@
-.settings-heading {
-  padding: 1em 0;
+.settings {
+  padding: 1em;
+  max-width: 40em;
 }
 
-.kintoneplugin-input-text {
-  width: 20em;
+.kguide-config-field {
+  display: block;
+  margin-bottom: 1em;
+}
+
+.kguide-config-actions,
+.kguide-config-submit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kguide-config-actions {
+  margin: 1.5em 0;
+}
+
+.kguide-config-submit {
+  padding-top: 1em;
+  border-top: 1px solid #e3e7e8;
 }

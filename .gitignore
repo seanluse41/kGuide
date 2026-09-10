@@ -1,4 +1,5 @@
 node_modules
 *.ppk
-*.env
+.env
 dist
+plugin/css/driver.css
