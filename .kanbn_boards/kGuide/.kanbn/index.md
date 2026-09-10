@@ -16,6 +16,8 @@ completedColumns:
 - [k-guide-modal-buttons-are-ugly-use-kuc](tasks/k-guide-modal-buttons-are-ugly-use-kuc.md)
 - [element-picker-side-panel-position-text-overflows-above-itself](tasks/element-picker-side-panel-position-text-overflows-above-itself.md)
 - [config-screen-text-overflow](tasks/config-screen-text-overflow.md)
+- [make-sidepanel-draggable-for-size](tasks/make-sidepanel-draggable-for-size.md)
+- [esc-button-should-close-sidepanel](tasks/esc-button-should-close-sidepanel.md)
 
 ## In Progress
 
