@@ -1,9 +1,5 @@
 export const PLUGIN_ID = kintone.$PLUGIN_ID;
 
-/**
- * Plugin config is stored as flat strings, so unpack it into something
- * with real types exactly once, here.
- */
 export const getConfig = () => {
   const raw = kintone.plugin.app.getConfig(PLUGIN_ID) || {};
   return {

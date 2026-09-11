@@ -1,6 +1,4 @@
-import { t } from './i18n.js';
 import { PLUGIN_ID } from './pluginConfig.js';
-import { showError } from './ui.js';
 
 const TOKEN_KEY = `${PLUGIN_ID}_licenseToken`;
 const EXPIRATION_KEY = `${PLUGIN_ID}_tokenExpiration`;
@@ -9,15 +7,6 @@ const CHECKSUM_KEY = `${PLUGIN_ID}_tokenChecksum`;
 const VALIDATE_URL = 'https://www.seanbase.com/api/validateLicense';
 export const STRIPE_PORTAL_URL = 'https://billing.stripe.com/p/login/00g9DZb7Dedw4lWaEE';
 
-/**
- * The subscription check is off while the rest of the plugin is being tested:
- * `validateLicenseKey` returns true without contacting the licence server, so
- * both buttons work with an empty or invalid subscription key.
- *
- * Flip this back to `true` before shipping. Nothing else has to change — the
- * call sites, the cached-token handling and the config screen are all still
- * wired up, and the warning below keeps it obvious that the check is bypassed.
- */
 const LICENSE_CHECK_ENABLED = false;
 
 if (!LICENSE_CHECK_ENABLED) {
@@ -72,14 +61,19 @@ export const isTokenValid = () => {
 /**
  * Validates the subscription key, caching the returned token so that only the
  * first use in a token's lifetime hits the network.
+ *
+ * The caller reports the failure, so a rejected key is a verdict rather than a
+ * notification.
+ *
+ * @returns {Promise<{valid: true} | {valid: false, messageKey: string}>}
  */
 export const validateLicenseKey = async (secretKey) => {
   if (!LICENSE_CHECK_ENABLED) {
-    return true;
+    return { valid: true };
   }
 
   if (isTokenValid()) {
-    return true;
+    return { valid: true };
   }
 
   try {
@@ -99,14 +93,12 @@ export const validateLicenseKey = async (secretKey) => {
 
     if (licenseStatus === 'active' && token) {
       storeToken(token);
-      return true;
+      return { valid: true };
     }
 
-    showError(t('invalidOrExpiredLicense'));
-    return false;
+    return { valid: false, messageKey: 'invalidOrExpiredLicense' };
   } catch (error) {
     console.error('Error validating license:', error);
-    showError(t('errorValidatingLicense'));
-    return false;
+    return { valid: false, messageKey: 'errorValidatingLicense' };
   }
 };

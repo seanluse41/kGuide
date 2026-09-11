@@ -37,7 +37,7 @@ domain.
 **Create kGuide** opens a side panel and puts the page into picking mode.
 `src/lib/elementPicker.js` captures hover and click on the record form, resolves
 whatever is under the cursor to its enclosing kintone field
-(`src/lib/fields.js`), and hands it to `GuideBuilder.svelte`, which holds the
+(`src/lib/fields.js`), and hands it to `SidePanel.svelte`, which holds the
 steps as component state. Saving writes them to the repository app through
 `src/lib/repository.js`.
 
@@ -111,6 +111,25 @@ KUC components are custom elements: construct one, then place it with a Svelte
 
 Most components end up inside the DOM Svelte manages and are cleaned up with it.
 `Dialog` and `Notification` are the exception — `open()` appends them to
-`document.body` and `close()` only hides them — so `src/lib/ui.js` removes them
-explicitly once they're done, and anything new that uses them should go through
-there.
+`document.body` and `close()` only hides them — so each is wrapped in a Svelte
+component (`src/components/Dialog.svelte`, `Notice.svelte`, `Spinner.svelte`)
+that builds the instance in an `$effect` and removes it on teardown.
+
+Those three are driven by state rather than called as functions. A screen keeps
+a `dialog` or `notice` variable and assigns to it:
+
+```js
+notice = { text: t('failedToCreateGuide'), type: 'danger' };
+
+dialog = {
+  title: t('createNewTourTitle'),
+  content: t('createNewTourContent'),
+  cancel: true,
+  onconfirm: () => (building = true),
+};
+```
+
+The component clears the variable once the user is done with it, so
+`<Dialog bind:dialog />` is the whole wiring. Modules under `src/lib/` never
+show UI themselves — they return a verdict or throw, and the screen decides what
+the user sees.
