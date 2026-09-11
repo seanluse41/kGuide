@@ -10,15 +10,6 @@
 
   let { step, index, onremove } = $props();
 
-  /**
-   * Nothing outside the child effect may read `step`.
-   *
-   * An attachment runs again whenever state read inside it changes, and these
-   * widgets write the user's edits back to `step` — so reading it while
-   * building one would add a second widget on every keystroke. Reading it in a
-   * child effect instead means only the value is kept in step, which is what
-   * should happen.
-   */
   const textField = (Field, label, key, maxLength) => (node) => {
     const field = new Field({ label, className: 'kguide-step-input' });
 
@@ -37,8 +28,6 @@
     field.addEventListener('change', onEdit);
     node.appendChild(field);
 
-    // Writing only on a real difference keeps what the user is typing from
-    // being put back underneath the cursor.
     $effect(() => {
       if (field.value !== step[key]) {
         field.value = step[key];
